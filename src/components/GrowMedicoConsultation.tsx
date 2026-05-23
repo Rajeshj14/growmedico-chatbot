@@ -1,10 +1,12 @@
+"use client";
+
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "@tanstack/react-router";
+import { useRouter } from "next/navigation";
 
 const LOCAL_STORAGE_KEY = "growMedicoConsultationSubmissions";
 const LOGO_SRC = "/gmlogo1.webp";
 const POPUP_VIDEO_SRC = "/adss.mov";
-const SUBMISSION_ENDPOINT = import.meta.env.VITE_SUBMISSION_API_URL || "/api/submissions";
+const SUBMISSION_ENDPOINT = process.env.NEXT_PUBLIC_SUBMISSION_API_URL || "/api/submissions";
 
 type Step =
   | "name"
@@ -117,11 +119,15 @@ const PROMPTS: Record<Exclude<Step, "summary" | "done">, string> = {
   email: "And your email address?",
   phone: "Your phone number, please?",
   professionalBackground: "What is your current professional role or business model?",
-  digitalExperience: "What is your current experience level with content creation and personal branding?",
-  mainStruggle: "What has been the biggest challenge keeping you from starting or scaling your personal brand?",
-  revenueMechanism: "How does your business currently monetize - or intend to monetize - your personal brand's audience?",
+  digitalExperience:
+    "What is your current experience level with content creation and personal branding?",
+  mainStruggle:
+    "What has been the biggest challenge keeping you from starting or scaling your personal brand?",
+  revenueMechanism:
+    "How does your business currently monetize - or intend to monetize - your personal brand's audience?",
   platformPriorities: "Where do you want to dominate and build your primary digital presence?",
-  ultimateGoal: "What is the primary result you want to achieve through your personal brand in the next 90 days?",
+  ultimateGoal:
+    "What is the primary result you want to achieve through your personal brand in the next 90 days?",
   investmentMindset:
     "Building a premium personal brand through a dedicated agency requires an investment in strategy and production. What is your approach to this project?",
   budgetFit: "Does an investment range of ₹80k to ₹1.5L match your budget?",
@@ -147,7 +153,9 @@ const STEP_ORDER: Step[] = [
 const isValidEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 const getPhoneDigits = (value: string) => value.replace(/\D/g, "");
 const isValidPhone = (value: string) => getPhoneDigits(value).length === 10;
-const createInitialMessages = (): Message[] => [{ id: 1, type: "bot", text: PROMPTS.name, createdAt: Date.now() }];
+const createInitialMessages = (): Message[] => [
+  { id: 1, type: "bot", text: PROMPTS.name, createdAt: Date.now() },
+];
 const shouldAskBudgetFit = (value: string) =>
   value === OPTIONS.investmentMindset?.[0] || value === OPTIONS.investmentMindset?.[1];
 
@@ -225,7 +233,9 @@ async function submitConsultation(formData: FormData) {
   const isExternalEndpoint = /^https?:\/\//i.test(endpoint);
   const response = await fetch(endpoint, {
     method: "POST",
-    headers: { "Content-Type": isExternalEndpoint ? "text/plain;charset=utf-8" : "application/json" },
+    headers: {
+      "Content-Type": isExternalEndpoint ? "text/plain;charset=utf-8" : "application/json",
+    },
     body: JSON.stringify(buildSubmissionPayload(formData)),
     mode: isExternalEndpoint ? "no-cors" : "cors",
   });
@@ -237,7 +247,7 @@ async function submitConsultation(formData: FormData) {
 }
 
 export function GrowMedicoConsultation() {
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const [step, setStep] = useState<Step>("name");
   const [messages, setMessages] = useState<Message[]>(createInitialMessages);
@@ -274,18 +284,27 @@ export function GrowMedicoConsultation() {
     setTimeout(() => {
       setTyping(false);
       idRef.current++;
-      setMessages((current) => [...current, { id: idRef.current, type: "bot", text, createdAt: Date.now() }]);
+      setMessages((current) => [
+        ...current,
+        { id: idRef.current, type: "bot", text, createdAt: Date.now() },
+      ]);
     }, 500);
   };
 
   const pushUser = (text: string) => {
     idRef.current++;
-    setMessages((current) => [...current, { id: idRef.current, type: "user", text, createdAt: Date.now() }]);
+    setMessages((current) => [
+      ...current,
+      { id: idRef.current, type: "user", text, createdAt: Date.now() },
+    ]);
   };
 
   const pushNotice = (text: string) => {
     idRef.current++;
-    setMessages((current) => [...current, { id: idRef.current, type: "notice", text, createdAt: Date.now() }]);
+    setMessages((current) => [
+      ...current,
+      { id: idRef.current, type: "notice", text, createdAt: Date.now() },
+    ]);
   };
 
   useEffect(() => {
@@ -339,13 +358,22 @@ export function GrowMedicoConsultation() {
 
     if (step === "email" && !isValidEmail(value)) {
       pushUser(value);
-      setTimeout(() => pushNotice("That email address looks incorrect. Please provide a valid email like name@example.com."), 250);
+      setTimeout(
+        () =>
+          pushNotice(
+            "That email address looks incorrect. Please provide a valid email like name@example.com.",
+          ),
+        250,
+      );
       return;
     }
 
     if (step === "phone" && !isValidPhone(trimmedValue)) {
       pushUser(trimmedValue);
-      setTimeout(() => pushNotice("That phone number looks incorrect. Please enter exactly 10 digits."), 250);
+      setTimeout(
+        () => pushNotice("That phone number looks incorrect. Please enter exactly 10 digits."),
+        250,
+      );
       return;
     }
 
@@ -428,7 +456,8 @@ export function GrowMedicoConsultation() {
     try {
       await submitConsultation(finalData);
       const firstName = finalData.name.split(" ")[0] || "";
-      navigate({ to: "/thank-you", search: { firstName, email: finalData.email } });
+      const searchParams = new URLSearchParams({ firstName, email: finalData.email });
+      router.push(`/thank-you?${searchParams.toString()}`);
     } catch (error) {
       console.error("Failed to submit consultation:", error);
       pushNotice("We could not submit this right now. Please try again in a moment.");
@@ -487,7 +516,11 @@ export function GrowMedicoConsultation() {
     { field: "name", label: "Name", value: data.name },
     { field: "email", label: "Email", value: data.email },
     { field: "phone", label: "Phone", value: data.phone },
-    { field: "professionalBackground", label: "Professional Background", value: data.professionalBackground },
+    {
+      field: "professionalBackground",
+      label: "Professional Background",
+      value: data.professionalBackground,
+    },
     { field: "digitalExperience", label: "Digital Experience", value: data.digitalExperience },
     { field: "mainStruggle", label: "Main Struggle", value: data.mainStruggle },
     { field: "revenueMechanism", label: "Revenue Mechanism", value: data.revenueMechanism },
@@ -1326,126 +1359,135 @@ export function GrowMedicoConsultation() {
           />
         </aside>
 
-      <section className="chat-card">
-        <div className="logo-crown">
-          <img src={LOGO_SRC} alt="Grow Medico" />
-        </div>
-        <p className="logo-title">GROW MEDICO</p>
-        <p className="logo-tagline">Personal Branding | Digital Marketing | Growth</p>
-        <span className="logo-rule" aria-hidden="true" />
+        <section className="chat-card">
+          <div className="logo-crown">
+            <img src={LOGO_SRC} alt="Grow Medico" />
+          </div>
+          <p className="logo-title">GROW MEDICO</p>
+          <p className="logo-tagline">Personal Branding | Digital Marketing | Growth</p>
+          <span className="logo-rule" aria-hidden="true" />
 
-        <div className="chat-body-wrap">
-          <button className="refresh-btn" type="button" onClick={resetChat} aria-label="Restart chat">
-            ↻
-          </button>
-          <div ref={chatRef} className="chat-body">
-            <div className="row">
-              {botAvatar}
-              <div className="bubble">
-                Hello! Welcome to <strong>Grow Medico</strong>.
-                <br />
-                We're a personal branding and digital growth team for healthcare professionals.
-                <br />
-                please fill the form below to book a consultation with our team.
-              </div>
-            </div>
-            <div className="time">{formatRelativeTime(introCreatedAt, now)}</div>
-
-            {messages.map((message) =>
-              message.type === "notice" ? (
-                <div key={message.id} className="notice-row">
-                  <div className="notice-bubble">{message.text}</div>
-                </div>
-              ) : message.type === "bot" ? (
-                <div key={message.id}>
-                  <div className="row">
-                    {botAvatar}
-                    <div className="bubble">{message.text}</div>
-                  </div>
-                  <div className="time">{formatRelativeTime(message.createdAt, now)}</div>
-                </div>
-              ) : (
-                <div key={message.id}>
-                  <div className="row user">
-                    <div className="user-bubble">{message.text}</div>
-                  </div>
-                  <div className="user-time">{formatRelativeTime(message.createdAt, now)}</div>
-                </div>
-              ),
-            )}
-
-            {typing && (
+          <div className="chat-body-wrap">
+            <button
+              className="refresh-btn"
+              type="button"
+              onClick={resetChat}
+              aria-label="Restart chat"
+            >
+              ↻
+            </button>
+            <div ref={chatRef} className="chat-body">
               <div className="row">
                 {botAvatar}
-                <div className="bubble">Typing...</div>
+                <div className="bubble">
+                  Hello! Welcome to <strong>Grow Medico</strong>.
+                  <br />
+                  We're a personal branding and digital growth team for healthcare professionals.
+                  <br />
+                  please fill the form below to book a consultation with our team.
+                </div>
               </div>
-            )}
+              <div className="time">{formatRelativeTime(introCreatedAt, now)}</div>
 
-            {!typing && renderOptions()}
-            {!typing && renderSummary()}
-          </div>
-        </div>
+              {messages.map((message) =>
+                message.type === "notice" ? (
+                  <div key={message.id} className="notice-row">
+                    <div className="notice-bubble">{message.text}</div>
+                  </div>
+                ) : message.type === "bot" ? (
+                  <div key={message.id}>
+                    <div className="row">
+                      {botAvatar}
+                      <div className="bubble">{message.text}</div>
+                    </div>
+                    <div className="time">{formatRelativeTime(message.createdAt, now)}</div>
+                  </div>
+                ) : (
+                  <div key={message.id}>
+                    <div className="row user">
+                      <div className="user-bubble">{message.text}</div>
+                    </div>
+                    <div className="user-time">{formatRelativeTime(message.createdAt, now)}</div>
+                  </div>
+                ),
+              )}
 
-        {!OPTIONS[step] && step !== "summary" && (
-          <div className="chat-input">
-            <form
-              onSubmit={(event) => {
-                event.preventDefault();
-                if (step === "consultationDate") {
-                  if (!input.trim() || !selectedTime) return;
-                  advance(`${input.trim()} at ${selectedTime}`);
-                  setInput("");
-                  setSelectedTime("");
-                  return;
-                }
-                if (!input.trim()) return;
-                advance(input);
-                setInput("");
-              }}
-            >
-              <div className="input-line">
-                <input
-                  ref={inputRef}
-                  type={step === "consultationDate" ? "date" : "text"}
-                  value={input}
-                  onChange={(event) => setInput(event.target.value)}
-                  min={
-                    step === "consultationDate" ? new Date().toISOString().split("T")[0] : undefined
-                  }
-                  placeholder={step === "consultationDate" ? "Select a date" : "Type an answer"}
-                  className="answer-input"
-                  autoComplete="off"
-                  autoCorrect="off"
-                  autoCapitalize="off"
-                  spellCheck={false}
-                />
-                <button
-                  type="submit"
-                  className="send-btn"
-                  disabled={step === "consultationDate" ? !input.trim() || !selectedTime : !input.trim()}
-                  aria-label="Send answer"
-                >
-                  ➤
-                </button>
-              </div>
-              {step === "consultationDate" && (
-                <div className="time-row">
-                  {TIME_SLOTS.map((time) => (
-                    <button
-                      key={time}
-                      type="button"
-                      className={`choice-btn${selectedTime === time ? " active" : ""}`}
-                      onClick={() => setSelectedTime(time)}
-                    >
-                      {time}
-                    </button>
-                  ))}
+              {typing && (
+                <div className="row">
+                  {botAvatar}
+                  <div className="bubble">Typing...</div>
                 </div>
               )}
-            </form>
+
+              {!typing && renderOptions()}
+              {!typing && renderSummary()}
+            </div>
           </div>
-        )}
-      </section>
+
+          {!OPTIONS[step] && step !== "summary" && (
+            <div className="chat-input">
+              <form
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  if (step === "consultationDate") {
+                    if (!input.trim() || !selectedTime) return;
+                    advance(`${input.trim()} at ${selectedTime}`);
+                    setInput("");
+                    setSelectedTime("");
+                    return;
+                  }
+                  if (!input.trim()) return;
+                  advance(input);
+                  setInput("");
+                }}
+              >
+                <div className="input-line">
+                  <input
+                    ref={inputRef}
+                    type={step === "consultationDate" ? "date" : "text"}
+                    value={input}
+                    onChange={(event) => setInput(event.target.value)}
+                    min={
+                      step === "consultationDate"
+                        ? new Date().toISOString().split("T")[0]
+                        : undefined
+                    }
+                    placeholder={step === "consultationDate" ? "Select a date" : "Type an answer"}
+                    className="answer-input"
+                    autoComplete="off"
+                    autoCorrect="off"
+                    autoCapitalize="off"
+                    spellCheck={false}
+                  />
+                  <button
+                    type="submit"
+                    className="send-btn"
+                    disabled={
+                      step === "consultationDate" ? !input.trim() || !selectedTime : !input.trim()
+                    }
+                    aria-label="Send answer"
+                  >
+                    ➤
+                  </button>
+                </div>
+                {step === "consultationDate" && (
+                  <div className="time-row">
+                    {TIME_SLOTS.map((time) => (
+                      <button
+                        key={time}
+                        type="button"
+                        className={`choice-btn${selectedTime === time ? " active" : ""}`}
+                        onClick={() => setSelectedTime(time)}
+                      >
+                        {time}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </form>
+            </div>
+          )}
+        </section>
       </div>
     </main>
   );

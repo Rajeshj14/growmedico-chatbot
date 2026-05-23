@@ -1,5 +1,5 @@
 /** @type {import('tailwindcss').Config} */
-module.exports = {
+const config = {
   content: [
     "./src/**/*.{js,ts,jsx,tsx,html}",
     // Add paths to your template files
@@ -40,3 +40,5 @@ module.exports = {
   },
   plugins: [],
 };
+
+export default config;

@@ -1,13 +1,5 @@
-// app/api/leads/route.ts
-import { PrismaClient } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
-
-/**
- * ✅ Prisma singleton (prevents "too many connections" in Next.js dev)
- */
-const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
-const prisma = globalForPrisma.prisma ?? new PrismaClient();
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+import { prisma } from "@/lib/prisma";
 
 interface LeadData {
   name: string;
@@ -24,7 +16,7 @@ interface LeadData {
   formName?: string;
   consent?: boolean;
   status?: string;
-  
+
   // Smile Baby specific fields
   whatsappNumber?: string;
   womansAgeBracket?: string;
@@ -103,12 +95,12 @@ async function saveLeadToDatabase(leadData: LeadData, telecrmResult?: any) {
 
   // Determine treatment based on form type
   let treatment = leadData.treatment || leadData.test;
-  if (leadData.formName?.toLowerCase() === 'smile baby evaluation') {
-    treatment = 'SB Evaluation Consultation';
+  if (leadData.formName?.toLowerCase() === "smile baby evaluation") {
+    treatment = "SB Evaluation Consultation";
   }
 
-  if (leadData.formName?.toLowerCase() === 'grow medico consultation') {
-    treatment = treatment || 'Personal Branding Consultation';
+  if (leadData.formName?.toLowerCase() === "grow medico consultation") {
+    treatment = treatment || "Personal Branding Consultation";
   }
 
   const message = leadData.message || leadData.concern || leadData.condition || null;
@@ -129,7 +121,7 @@ async function saveLeadToDatabase(leadData: LeadData, telecrmResult?: any) {
       source: leadData.source || null,
       formName: leadData.formName || "Website Leads",
       status: leadData.status || "new",
-      
+
       // Smile Baby specific fields
       whatsappNumber: leadData.whatsappNumber || leadData.whatsapp || null,
       womansAgeBracket: leadData.womansAgeBracket || null,
@@ -151,13 +143,13 @@ async function saveLeadToDatabase(leadData: LeadData, telecrmResult?: any) {
     },
   });
 
-  console.log("✅ Lead saved to database:", { 
-    id: lead.id, 
-    name: lead.name, 
+  console.log("✅ Lead saved to database:", {
+    id: lead.id,
+    name: lead.name,
     phone: lead.phone,
-    formName: lead.formName 
+    formName: lead.formName,
   });
-  
+
   return lead;
 }
 
@@ -174,7 +166,7 @@ async function sendToTeleCRM(leadData: LeadData) {
   const timeout = setTimeout(() => controller.abort(), 15000);
 
   const phone = normalizePhoneForTeleCRM(leadData.phone);
-  
+
   // Prepare notes based on form type
   const notes = [
     { type: "SYSTEM_NOTE", text: `Form Name: ${leadData.formName || "Website Leads"}` },
@@ -183,32 +175,62 @@ async function sendToTeleCRM(leadData: LeadData) {
   ];
 
   // Add Smile Baby specific notes
-  if (leadData.formName?.toLowerCase() === 'smile baby evaluation') {
+  if (leadData.formName?.toLowerCase() === "smile baby evaluation") {
     notes.push(
       { type: "SYSTEM_NOTE", text: `Service: Evaluation Consultation - Smile Baby Evaluation` },
-      { type: "SYSTEM_NOTE", text: `Woman's Age Bracket: ${leadData.womansAgeBracket || "Not specified"}` },
-      { type: "SYSTEM_NOTE", text: `Trying Duration: ${leadData.tryingDuration || "Not specified"}` },
-      { type: "SYSTEM_NOTE", text: `WhatsApp: ${leadData.isWhatsapp || leadData.whatsapp || "Not specified"}` }
+      {
+        type: "SYSTEM_NOTE",
+        text: `Woman's Age Bracket: ${leadData.womansAgeBracket || "Not specified"}`,
+      },
+      {
+        type: "SYSTEM_NOTE",
+        text: `Trying Duration: ${leadData.tryingDuration || "Not specified"}`,
+      },
+      {
+        type: "SYSTEM_NOTE",
+        text: `WhatsApp: ${leadData.isWhatsapp || leadData.whatsapp || "Not specified"}`,
+      },
     );
-  } else if (leadData.formName?.toLowerCase() === 'grow medico consultation') {
+  } else if (leadData.formName?.toLowerCase() === "grow medico consultation") {
     notes.push(
       { type: "SYSTEM_NOTE", text: `Service: Personal Branding Consultation` },
-      { type: "SYSTEM_NOTE", text: `Appointment DateTime: ${leadData.appointmentDateTime || leadData.consultationDate || "Not specified"}` },
-      { type: "SYSTEM_NOTE", text: `Professional Background: ${leadData.professionalBackground || "Not specified"}` },
-      { type: "SYSTEM_NOTE", text: `Digital Experience: ${leadData.digitalExperience || "Not specified"}` },
+      {
+        type: "SYSTEM_NOTE",
+        text: `Appointment DateTime: ${leadData.appointmentDateTime || leadData.consultationDate || "Not specified"}`,
+      },
+      {
+        type: "SYSTEM_NOTE",
+        text: `Professional Background: ${leadData.professionalBackground || "Not specified"}`,
+      },
+      {
+        type: "SYSTEM_NOTE",
+        text: `Digital Experience: ${leadData.digitalExperience || "Not specified"}`,
+      },
       { type: "SYSTEM_NOTE", text: `Main Struggle: ${leadData.mainStruggle || "Not specified"}` },
-      { type: "SYSTEM_NOTE", text: `Revenue Mechanism: ${leadData.revenueMechanism || "Not specified"}` },
-      { type: "SYSTEM_NOTE", text: `Platform Priorities: ${leadData.platformPriorities || "Not specified"}` },
+      {
+        type: "SYSTEM_NOTE",
+        text: `Revenue Mechanism: ${leadData.revenueMechanism || "Not specified"}`,
+      },
+      {
+        type: "SYSTEM_NOTE",
+        text: `Platform Priorities: ${leadData.platformPriorities || "Not specified"}`,
+      },
       { type: "SYSTEM_NOTE", text: `Ultimate Goal: ${leadData.ultimateGoal || "Not specified"}` },
-      { type: "SYSTEM_NOTE", text: `Investment Mindset: ${leadData.investmentMindset || "Not specified"}` },
-      { type: "SYSTEM_NOTE", text: `URL: ${leadData.pageUrl || leadData.url || "Not specified"}` }
+      {
+        type: "SYSTEM_NOTE",
+        text: `Investment Mindset: ${leadData.investmentMindset || "Not specified"}`,
+      },
+      { type: "SYSTEM_NOTE", text: `URL: ${leadData.pageUrl || leadData.url || "Not specified"}` },
     );
   } else {
     // Add other form specific notes
     notes.push(
-      { type: "SYSTEM_NOTE", text: `Test/Treatment Requested: ${leadData.test || leadData.treatment || "Not specified"}` },
+      {
+        type: "SYSTEM_NOTE",
+        text: `Test/Treatment Requested: ${leadData.test || leadData.treatment || "Not specified"}`,
+      },
       { type: "SYSTEM_NOTE", text: `Pincode: ${leadData.pincode || "Not specified"}` },
-      { type: "SYSTEM_NOTE", text: `Message: ${leadData.message || "Not specified"}` }
+      { type: "SYSTEM_NOTE", text: `Message: ${leadData.message || "Not specified"}` },
     );
   }
 
@@ -224,9 +246,9 @@ async function sendToTeleCRM(leadData: LeadData) {
   console.log("📤 Sending to TeleCRM:", {
     endpoint: process.env.TELECRM_API_URL,
     formName: leadData.formName,
-    payloadPreview: { 
-      ...telecrmPayload, 
-      fields: { ...telecrmPayload.fields, phone: "***REDACTED***" } 
+    payloadPreview: {
+      ...telecrmPayload,
+      fields: { ...telecrmPayload.fields, phone: "***REDACTED***" },
     },
   });
 
@@ -320,21 +342,37 @@ export async function POST(request: NextRequest) {
   try {
     data = await request.json();
 
-    data.formName = text(data.formName) || (text(data.source) === "Grow Medico Consultation" ? "Grow Medico Consultation" : data.formName);
+    data.formName =
+      text(data.formName) ||
+      (text(data.source) === "Grow Medico Consultation"
+        ? "Grow Medico Consultation"
+        : data.formName);
     data.message = text(data.message) || text(data.concern) || text(data.condition) || data.message;
-    data.treatment = text(data.treatment) || (data.formName === "Grow Medico Consultation" ? "Personal Branding Consultation" : data.treatment);
-    data.consent = data.consent ?? (data.formName === "Grow Medico Consultation");
+    data.treatment =
+      text(data.treatment) ||
+      (data.formName === "Grow Medico Consultation"
+        ? "Personal Branding Consultation"
+        : data.treatment);
+    data.consent = data.consent ?? data.formName === "Grow Medico Consultation";
 
     console.log("📨 Received lead submission:", {
       name: data.name,
-      phoneMasked: data.phone ? data.phone.substring(0, 3) + "****" + data.phone.substring(Math.max(0, data.phone.length - 3)) : "N/A",
+      phoneMasked: data.phone
+        ? data.phone.substring(0, 3) +
+          "****" +
+          data.phone.substring(Math.max(0, data.phone.length - 3))
+        : "N/A",
       formName: data.formName,
     });
 
     if (!data.name || !data.phone) {
       return NextResponse.json(
-        { success: false, error: "Missing required fields", details: "Please provide name and phone number" },
-        { status: 400 }
+        {
+          success: false,
+          error: "Missing required fields",
+          details: "Please provide name and phone number",
+        },
+        { status: 400 },
       );
     }
 
@@ -381,7 +419,7 @@ export async function POST(request: NextRequest) {
         referenceId: `ERR-${Date.now()}`,
         formName: data?.formName || "Website Leads",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -425,11 +463,11 @@ export async function GET(request: NextRequest) {
     if (formName && formName !== "all") where.formName = formName;
 
     const [leads, total] = await Promise.all([
-      prisma.lead.findMany({ 
-        where, 
-        orderBy: { createdAt: "desc" }, 
-        skip, 
-        take: limit 
+      prisma.lead.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: limit,
       }),
       prisma.lead.count({ where }),
     ]);
@@ -454,7 +492,7 @@ export async function GET(request: NextRequest) {
           status: lead.status,
           telecrmSynced: lead.telecrmSynced,
           telecrmId: lead.telecrmId,
-          
+
           // Smile Baby specific fields
           whatsappNumber: lead.whatsappNumber,
           womansAgeBracket: lead.womansAgeBracket,
@@ -471,19 +509,23 @@ export async function GET(request: NextRequest) {
           ultimateGoal: lead.ultimateGoal,
           investmentMindset: lead.investmentMindset,
           pageUrl: lead.pageUrl,
-          
+
           createdAt: lead.createdAt.toISOString(),
           updatedAt: lead.updatedAt.toISOString(),
         })),
         pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
       },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error: any) {
     console.error("Error fetching leads:", error);
     return NextResponse.json(
-      { success: false, error: "Failed to fetch leads", details: error?.message || "Unknown error" },
-      { status: 500 }
+      {
+        success: false,
+        error: "Failed to fetch leads",
+        details: error?.message || "Unknown error",
+      },
+      { status: 500 },
     );
   }
 }
