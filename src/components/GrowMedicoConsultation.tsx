@@ -2,6 +2,7 @@
 
 import { type CSSProperties, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { CalendarDays } from "lucide-react";
 
 const LOCAL_STORAGE_KEY = "growMedicoConsultationSubmissions";
 const LOGO_SRC = "/gmlogo1.webp";
@@ -342,6 +343,13 @@ export function GrowMedicoConsultation() {
     videoRef.current.play().catch(() => {
       // Browser autoplay policies can block unmuted playback before user interaction.
     });
+  };
+
+  const openDatePicker = () => {
+    if (!inputRef.current) return;
+
+    inputRef.current.focus();
+    inputRef.current.showPicker?.();
   };
 
   useEffect(() => {
@@ -1309,6 +1317,25 @@ export function GrowMedicoConsultation() {
       line-height: 1;
       box-shadow: 0 0 18px rgba(7,155,143,0.1);
     }
+    .date-input-line::before {
+      display: none;
+    }
+    .date-picker-btn {
+      width: 22px;
+      height: 22px;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      background: transparent;
+      border: 1px solid rgba(7,155,143,0.34);
+      color: #16c6b3;
+      cursor: pointer;
+      box-shadow: 0 0 18px rgba(7,155,143,0.1);
+    }
+    .date-picker-btn svg {
+      width: 14px;
+      height: 14px;
+    }
     .answer-input {
       width: 100%;
       border: none;
@@ -1383,6 +1410,9 @@ export function GrowMedicoConsultation() {
       .chat-body-wrap {
         padding-top: 34px;
       }
+      .header-copy .intro-message {
+        display: none !important;
+      }
       .bubble,
       .option-bubble {
         font-size: clamp(23px, 2.3vw, 31px);
@@ -1405,16 +1435,19 @@ export function GrowMedicoConsultation() {
         height: 100dvh;
         min-height: 0;
         grid-template-columns: 1fr;
-        grid-template-rows: minmax(240px, 44dvh) minmax(0, 1fr);
+        grid-template-rows: minmax(280px, 54dvh) minmax(0, 1fr);
         border-top: 0;
         border-bottom: 0;
       }
       .video-panel {
-        height: 44dvh;
+        height: 54dvh;
         min-height: 0;
         padding: 28px 24px 22px;
         border-right: none;
         border-bottom: 1px solid rgba(255,255,255,0.1);
+      }
+        .bubbles{
+        font-size: 16px important!;
       }
       .video-panel video {
         object-position: center 20%;
@@ -1479,6 +1512,7 @@ export function GrowMedicoConsultation() {
       }
       .header-copy .row {
         margin-top: 8px;
+        display: none;
       }
       .header-copy .bubble {
         font-size: 13px;
@@ -1557,7 +1591,7 @@ export function GrowMedicoConsultation() {
       }
       .mobile-question-panel {
         display: block;
-        margin: 12px 0 0;
+        margin: 12px 0 10px;
       }
       .mobile-current-question {
         display: block;
@@ -1575,7 +1609,7 @@ export function GrowMedicoConsultation() {
     }
     @media (max-width: 640px) {
       .video-panel {
-        height: 44dvh;
+        height: 54dvh;
         min-height: 0;
         padding: 22px 18px 20px;
       }
@@ -1671,7 +1705,7 @@ export function GrowMedicoConsultation() {
     }
     @media (max-width: 420px) {
       .video-panel {
-        height: 42dvh;
+        height: 54dvh;
         min-height: 0;
         padding: 18px 16px;
       }
@@ -1686,7 +1720,7 @@ export function GrowMedicoConsultation() {
       }
       .bubble,
       .option-bubble {
-        font-size: 20px;
+        font-size: 16px;
       }
       .chat-body > div:first-child .bubble {
         font-size: 16px;
@@ -1825,10 +1859,7 @@ export function GrowMedicoConsultation() {
                 </button>
               </div>
               <p className="header-subtitle">| Digital Marketing | Growth</p>
-              {/* <div className="message-label intro-message">Grow Medico</div> */}
-              <div className="row intro-message">
-                {botAvatar}
-              </div>
+
             </div>
             <div className="chapter-block">
               <div className="chapter-label">Chapter</div>
@@ -1854,6 +1885,17 @@ export function GrowMedicoConsultation() {
             >
               ↻
             </button>
+                          {/* <div className="message-label intro-message">Grow Medico</div> */}
+              <div className="row intro-message">
+                {botAvatar}
+                <div className="bubble bubbles">
+                  Hello! Welcome to <strong>Grow Medico</strong>.
+                  <br />
+                  We're a personal branding and digital growth team for healthcare professionals.
+                  <br />
+                  please fill the form below to book a consultation with our team.
+                </div>
+              </div>
             <div ref={chatRef} className="chat-body">
               <div className="answer-progress question-progress" aria-hidden="true">
                 <span />
@@ -1931,7 +1973,17 @@ export function GrowMedicoConsultation() {
                   setInput("");
                 }}
               >
-                <div className="input-line">
+                <div className={`input-line${step === "consultationDate" ? " date-input-line" : ""}`}>
+                  {step === "consultationDate" && (
+                    <button
+                      className="date-picker-btn"
+                      type="button"
+                      onClick={openDatePicker}
+                      aria-label="Open calendar"
+                    >
+                      <CalendarDays aria-hidden="true" />
+                    </button>
+                  )}
                   <input
                     ref={inputRef}
                     type={step === "consultationDate" ? "date" : "text"}
