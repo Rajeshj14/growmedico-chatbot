@@ -835,7 +835,7 @@ export function GrowMedicoConsultation() {
       z-index: 1;
     }
     .header-copy {
-      padding: 44px clamp(44px, 5vw, 82px) 0;
+      padding: 44px clamp(0px, 5vw, 0px) 0;
       border-bottom: 1px solid rgba(232,251,248,0.06);
     }
     .header-top-row {
@@ -950,7 +950,7 @@ export function GrowMedicoConsultation() {
     .chat-body-wrap {
       position: relative;
       min-height: 0;
-      padding: 42px clamp(44px, 5vw, 82px) 18px;
+      padding: 42px clamp(0px, 5vw, 0px) 0px;
       overflow: hidden;
       z-index: 1;
     }
@@ -993,7 +993,7 @@ export function GrowMedicoConsultation() {
     .chat-body::-webkit-scrollbar-track { background: transparent; }
     .row {
       display: block;
-      margin: 0 0 28px;
+      margin: 0 0 8px;
       padding: 0;
     }
     .row.user {
@@ -1264,7 +1264,7 @@ export function GrowMedicoConsultation() {
       cursor: not-allowed;
     }
     .chat-input {
-      padding: 10px clamp(44px, 5vw, 82px) 22px;
+      padding: 10px clamp(0px, 2vw, 0px) 22px;
       background:
         linear-gradient(90deg, rgba(7,155,143,0.055), transparent 40%),
         linear-gradient(180deg, rgba(0,0,0,0.08), #040606);
@@ -1503,9 +1503,7 @@ export function GrowMedicoConsultation() {
         width: 36px;
         height: 36px;
         display: grid;
-        place-items: center;
         transform: translateX(-50%);
-        border: 1px solid rgba(232,251,248,0.22);
         border-radius: 999px;
         background: rgba(3,8,8,0.86);
         color: #16c6b3;
@@ -1790,7 +1788,7 @@ export function GrowMedicoConsultation() {
       .header-copy,
       .chat-body-wrap,
       .chat-input {
-        padding-left: 18px;
+        padding-left: 2px;
         padding-right: 18px;
       }
       .bubble,
@@ -1974,9 +1972,7 @@ export function GrowMedicoConsultation() {
                 <div className="bubble bubbles">
                   Hello! Welcome to <strong>Grow Medico</strong>.
                   <br />
-                  We're a personal branding and digital growth team for healthcare professionals.
-                  <br />
-                  please fill the form below to book a consultation with our team.
+                  Please fill the form below to book a consultation with our team.
                 </div>
               </div>
             <div ref={chatRef} className="chat-body">
