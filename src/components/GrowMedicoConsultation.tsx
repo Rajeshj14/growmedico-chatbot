@@ -257,8 +257,6 @@ export function GrowMedicoConsultation() {
   const [submitting, setSubmitting] = useState(false);
   const [editingStep, setEditingStep] = useState<FieldStep | null>(null);
   const [now, setNow] = useState(() => Date.now());
-  const [introCreatedAt, setIntroCreatedAt] = useState(() => Date.now());
-
   const [data, setData] = useState<FormData>({
     name: "",
     email: "",
@@ -473,7 +471,6 @@ export function GrowMedicoConsultation() {
     setSelectedTime("");
     setSubmitting(false);
     setEditingStep(null);
-    setIntroCreatedAt(Date.now());
     setNow(Date.now());
     setData({
       name: "",
@@ -770,7 +767,7 @@ export function GrowMedicoConsultation() {
         linear-gradient(135deg, #101615 0%, #090d0c 48%, #040606 100%);
       position: relative;
       display: grid;
-      grid-template-rows: 146px minmax(0, 1fr) 110px;
+      grid-template-rows: auto minmax(0, 1fr) 110px;
       overflow: hidden;
       border-left: 1px solid rgba(232,251,248,0.08);
     }
@@ -849,6 +846,21 @@ export function GrowMedicoConsultation() {
       height: 1px;
       margin-top: 20px;
       background: linear-gradient(90deg, rgba(232,251,248,0.45), rgba(7,155,143,0.65));
+    }
+    .header-copy .message-label {
+      margin-top: 24px;
+      margin-bottom: 16px;
+      letter-spacing: 0.42em;
+    }
+    .header-copy .row {
+      margin-bottom: 0;
+    }
+    .header-copy .bubble {
+      max-width: 760px;
+      color: rgba(242,239,230,0.78);
+      font-size: clamp(16px, 1.16vw, 20px);
+      line-height: 1.42;
+      text-shadow: none;
     }
     .chapter-block {
       padding: 44px 34px 0;
@@ -1320,7 +1332,7 @@ export function GrowMedicoConsultation() {
         grid-template-columns: clamp(240px, 30vw, 340px) minmax(0, 1fr);
       }
       .chat-card {
-        grid-template-rows: 136px minmax(0, 1fr) 104px;
+        grid-template-rows: auto minmax(0, 1fr) 104px;
       }
       .chat-card::after {
         inset: 136px auto 104px 0;
@@ -1428,9 +1440,15 @@ export function GrowMedicoConsultation() {
         padding-right: 0;
         padding-bottom: 8px;
       }
-      .intro-message,
       .message-block {
         display: none;
+      }
+      .intro-message,
+      .message-label.intro-message {
+        display: block;
+      }
+      .message-label.intro-message {
+        display: flex;
       }
       .message-block.active-message,
       .notice-row.active-message {
@@ -1697,8 +1715,19 @@ export function GrowMedicoConsultation() {
         >
           <header className="consultation-header">
             <div className="header-copy">
-              <div className="top-kicker">Private Consultation</div>
-              <p className="header-subtitle">By invitation - In confidence</p>
+              <div className="top-kicker">Personal Branding </div>
+              <p className="header-subtitle">| Digital Marketing | Growth</p>
+              {/* <div className="message-label intro-message">Grow Medico</div> */}
+              <div className="row intro-message">
+                {botAvatar}
+                <div className="bubble">
+                  Hello! Welcome to <strong>Grow Medico</strong>.
+                  <br />
+                  We're a personal branding and digital growth team for healthcare professionals.
+                  <br />
+                  please fill the form below to book a consultation with our team.
+                </div>
+              </div>
             </div>
             <div className="chapter-block">
               <div className="chapter-label">Chapter</div>
@@ -1706,16 +1735,13 @@ export function GrowMedicoConsultation() {
                 {chapterNumber} <span>/ {totalChapters}</span>
               </div>
             </div>
-            <div className="progress-track" aria-hidden="true">
-              <span />
-            </div>
           </header>
 
           <div className="logo-crown">
             <img src={LOGO_SRC} alt="Grow Medico" />
           </div>
           <p className="logo-title">GROW MEDICO</p>
-          <p className="logo-tagline">Personal Branding | Digital Marketing | Growth</p>
+          <p className="logo-tagline">Personal Branding </p>
           <span className="logo-rule" aria-hidden="true" />
 
           <div className="chat-body-wrap">
@@ -1731,18 +1757,6 @@ export function GrowMedicoConsultation() {
               <div className="answer-progress question-progress" aria-hidden="true">
                 <span />
               </div>
-              <div className="message-label intro-message">Grow Medico</div>
-              <div className="row intro-message">
-                {botAvatar}
-                <div className="bubble">
-                  Hello! Welcome to <strong>Grow Medico</strong>.
-                  <br />
-                  We're a personal branding and digital growth team for healthcare professionals.
-                  <br />
-                  please fill the form below to book a consultation with our team.
-                </div>
-              </div>
-              <div className="time intro-message">{formatRelativeTime(introCreatedAt, now)}</div>
 
               {messages.map((message) =>
                 message.type === "notice" ? (
