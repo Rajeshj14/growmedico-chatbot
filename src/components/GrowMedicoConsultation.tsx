@@ -824,6 +824,30 @@ export function GrowMedicoConsultation() {
       padding: 44px clamp(44px, 5vw, 82px) 0;
       border-bottom: 1px solid rgba(232,251,248,0.06);
     }
+    .header-top-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .header-top-row .refresh-btn {
+      position: static;
+      flex: 0 0 auto;
+      margin-top: 2px;
+      padding: 0;
+      width: 24px;
+      height: 24px;
+      display: grid;
+      place-items: center;
+      font-size: 0;
+      line-height: 1;
+    }
+    .header-top-row .refresh-btn::before {
+      content: "\\21BB";
+      font-size: 15px;
+      line-height: 1;
+      letter-spacing: 0;
+    }
     .top-kicker {
       margin-bottom: 14px;
       color: #ffffff;
@@ -937,6 +961,9 @@ export function GrowMedicoConsultation() {
     }
     .refresh-btn:hover {
       color: #16c6b3;
+    }
+    .chat-body-wrap > .refresh-btn {
+      display: none;
     }
     .chat-body {
       height: 100%;
@@ -1229,6 +1256,9 @@ export function GrowMedicoConsultation() {
     .mobile-current-question {
       display: none;
     }
+    .mobile-question-panel {
+      display: none;
+    }
     .chat-input form {
       width: 100%;
     }
@@ -1399,8 +1429,9 @@ export function GrowMedicoConsultation() {
       }
       .chat-card {
         min-height: 0;
-        grid-template-rows: auto auto auto;
-        overflow-y: auto;
+        height: 100%;
+        grid-template-rows: auto minmax(0, 1fr) auto;
+        overflow-y: hidden;
         overflow-x: hidden;
         -webkit-overflow-scrolling: touch;
         scrollbar-width: none;
@@ -1458,16 +1489,19 @@ export function GrowMedicoConsultation() {
         display: none;
       }
       .chat-body-wrap {
-        padding-top: 34px;
+        min-height: 0;
+        padding-top: 12px;
         padding-bottom: 10px;
-        overflow: visible;
+        overflow-y: auto;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
       }
       .chat-body {
         height: auto;
         min-height: 0;
         overflow: visible;
         padding-right: 0;
-        padding-bottom: 8px;
+        padding-bottom: 14px;
       }
       .message-block {
         display: none;
@@ -1480,17 +1514,20 @@ export function GrowMedicoConsultation() {
         display: flex;
       }
       .message-block.active-message,
-      .message-block.user-message,
       .notice-row.active-message {
         display: block;
       }
-      .text-step-active .message-block.bot-message.active-message {
+      .message-block.bot-message.active-message {
         display: none;
       }
       .refresh-btn {
-        right: 24px;
-        top: 8px;
+        right: auto;
+        top: auto;
         bottom: auto;
+      }
+      .header-top-row .refresh-btn {
+        position: static;
+        margin-top: 2px;
       }
       .bubble,
       .option-bubble {
@@ -1514,10 +1551,15 @@ export function GrowMedicoConsultation() {
         display: block;
         padding-top: 12px;
         padding-bottom: max(22px, env(safe-area-inset-bottom));
+        flex: none;
+      }
+      .mobile-question-panel {
+        display: block;
+        margin: 12px 0 0;
       }
       .mobile-current-question {
         display: block;
-        margin: 0 0 12px;
+        margin: 0;
         color: #079b8f;
         font-family: 'Outfit', Arial, sans-serif;
         font-size: 16px;
@@ -1526,6 +1568,7 @@ export function GrowMedicoConsultation() {
       }
       .answer-progress {
         display: block;
+        margin-bottom: 0;
       }
     }
     @media (max-width: 640px) {
@@ -1548,7 +1591,7 @@ export function GrowMedicoConsultation() {
         font-size: 24px;
       }
       .chat-body-wrap {
-        padding-top: 32px;
+        padding-top: 10px;
       }
       .header-copy {
         padding-top: 12px;
@@ -1596,11 +1639,11 @@ export function GrowMedicoConsultation() {
         gap: 10px;
       }
       .chat-input {
-        padding: 10px 20px max(22px, env(safe-area-inset-bottom));
+        padding: 10px 20px max(24px, env(safe-area-inset-bottom));
       }
       .input-line {
         grid-template-columns: 28px minmax(0, 1fr) auto;
-        min-height: 54px;
+        min-height: 52px;
         padding: 0;
         gap: 12px;
       }
@@ -1768,7 +1811,17 @@ export function GrowMedicoConsultation() {
         >
           <header className="consultation-header">
             <div className="header-copy">
-              <div className="top-kicker">Personal Branding </div>
+              <div className="header-top-row">
+                <div className="top-kicker">Personal Branding </div>
+                <button
+                  className="refresh-btn"
+                  type="button"
+                  onClick={resetChat}
+                  aria-label="Restart chat"
+                >
+                  Restart
+                </button>
+              </div>
               <p className="header-subtitle">| Digital Marketing | Growth</p>
               {/* <div className="message-label intro-message">Grow Medico</div> */}
               <div className="row intro-message">
@@ -1810,6 +1863,11 @@ export function GrowMedicoConsultation() {
               <div className="answer-progress question-progress" aria-hidden="true">
                 <span />
               </div>
+              {step !== "summary" && step !== "done" && (
+                <div className="mobile-question-panel">
+                  <div className="mobile-current-question">{PROMPTS[step]}</div>
+                </div>
+              )}
 
               {messages.map((message) =>
                 message.type === "notice" ? (
@@ -1863,9 +1921,6 @@ export function GrowMedicoConsultation() {
 
           {!OPTIONS[step] && step !== "summary" && (
             <div className="chat-input">
-              <div className="mobile-current-question">
-                {PROMPTS[step as Exclude<Step, "summary" | "done">]}
-              </div>
               <form
                 onSubmit={(event) => {
                   event.preventDefault();
