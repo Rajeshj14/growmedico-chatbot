@@ -51,6 +51,7 @@ interface Message {
   type: "bot" | "user" | "notice";
   text: string;
   createdAt: number;
+  questionText?: string;
 }
 
 const formatRelativeTime = (createdAt: number, now: number) => {
@@ -291,11 +292,11 @@ export function GrowMedicoConsultation() {
     }, 500);
   };
 
-  const pushUser = (text: string) => {
+  const pushUser = (text: string, questionText?: string) => {
     idRef.current++;
     setMessages((current) => [
       ...current,
-      { id: idRef.current, type: "user", text, createdAt: Date.now() },
+      { id: idRef.current, type: "user", text, createdAt: Date.now(), questionText },
     ]);
   };
 
@@ -364,7 +365,7 @@ export function GrowMedicoConsultation() {
     if (!trimmedValue) return;
 
     if (step === "email" && !isValidEmail(value)) {
-      pushUser(value);
+      pushUser(value, PROMPTS.email);
       setTimeout(
         () =>
           pushNotice(
@@ -376,7 +377,7 @@ export function GrowMedicoConsultation() {
     }
 
     if (step === "phone" && !isValidPhone(trimmedValue)) {
-      pushUser(trimmedValue);
+      pushUser(trimmedValue, PROMPTS.phone);
       setTimeout(
         () => pushNotice("That phone number looks incorrect. Please enter exactly 10 digits."),
         250,
@@ -384,7 +385,7 @@ export function GrowMedicoConsultation() {
       return;
     }
 
-    pushUser(trimmedValue);
+    pushUser(trimmedValue, step === "summary" || step === "done" ? undefined : PROMPTS[step]);
 
     if (editingStep === step) {
       setData((current) => ({ ...current, [step]: trimmedValue }));
@@ -545,7 +546,8 @@ export function GrowMedicoConsultation() {
   const totalChapters = String(STEP_ORDER.length).padStart(2, "0");
   const progressPercent = `${((currentStepIndex + 1) / STEP_ORDER.length) * 100}%`;
   const answeredProgressPercent = `${(completedStepCount / (STEP_ORDER.length - 1)) * 100}%`;
-  const latestMessageId = messages[messages.length - 1]?.id;
+  const latestMessage = messages[messages.length - 1];
+  const latestMessageId = latestMessage?.id;
   const isTextInputStep = !OPTIONS[step] && step !== "summary";
 
   const botAvatar = (
@@ -996,6 +998,8 @@ export function GrowMedicoConsultation() {
     }
     .row.user {
       display: flex;
+      flex-direction: column;
+      align-items: flex-end;
       justify-content: flex-end;
       margin: 0 0 34px;
     }
@@ -1069,6 +1073,16 @@ export function GrowMedicoConsultation() {
         inset 0 0 0 1px rgba(255,255,255,0.025);
       backdrop-filter: blur(12px);
     }
+    .answered-question {
+      display: none;
+      max-width: min(680px, 100%);
+      margin: 0 0 10px;
+      color: rgba(22,198,179,0.82);
+      font-family: 'Outfit', Arial, sans-serif;
+      font-size: 13px;
+      line-height: 1.35;
+      text-align: right;
+    }
     .notice-row {
       display: flex;
       justify-content: center;
@@ -1101,27 +1115,28 @@ export function GrowMedicoConsultation() {
       width: min(980px, 100%);
     }
     .choice-btn {
-      border: 1px solid rgba(232,251,248,0.12);
-      border-radius: 0;
+      border: 1px solid rgba(232,251,248,0.14);
+      border-radius: 8px;
       background:
-        linear-gradient(90deg, rgba(7,155,143,0.08), transparent 54%),
-        rgba(5,10,10,0.62);
-      color: rgba(242,239,230,0.82);
+        linear-gradient(135deg, rgba(7,155,143,0.14), rgba(232,251,248,0.035)),
+        rgba(5,10,10,0.72);
+      color: rgba(242,239,230,0.86);
       min-height: 56px;
-      padding: 0 20px;
+      padding: 0 18px;
       display: inline-flex;
       align-items: center;
       justify-content: flex-start;
-      gap: 15px;
+      gap: 12px;
       font-family: 'Outfit', Arial, sans-serif;
       font-size: 13px;
+      font-weight: 500;
       line-height: 1.25;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
+      letter-spacing: 0;
+      text-transform: none;
       cursor: pointer;
       box-shadow:
-        inset 3px 0 0 rgba(7,155,143,0.42),
-        inset 0 0 0 1px rgba(255,255,255,0.012);
+        0 14px 32px rgba(0,0,0,0.18),
+        inset 0 1px 0 rgba(255,255,255,0.035);
       position: relative;
       overflow: hidden;
       transition: border-color 0.18s ease, color 0.18s ease, background 0.18s ease, transform 0.18s ease;
@@ -1138,9 +1153,17 @@ export function GrowMedicoConsultation() {
     }
     .choice-btn::before {
       content: ">";
+      width: 22px;
+      height: 22px;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      border: 1px solid rgba(22,198,179,0.3);
+      border-radius: 999px;
       color: #16c6b3;
       letter-spacing: 0;
-      transform: translateY(-1px);
+      font-size: 12px;
+      line-height: 1;
     }
     .choice-btn.active,
     .choice-btn:hover {
@@ -1149,7 +1172,7 @@ export function GrowMedicoConsultation() {
       background:
         linear-gradient(90deg, rgba(7,155,143,0.18), rgba(232,251,248,0.035)),
         rgba(7,155,143,0.08);
-      transform: translateX(6px);
+      transform: translateY(-1px);
       box-shadow:
         inset 0 0 0 1px rgba(232,251,248,0.04),
         0 18px 46px rgba(0,0,0,0.22),
@@ -1187,13 +1210,14 @@ export function GrowMedicoConsultation() {
       text-transform: uppercase;
     }
     .edit-field-btn {
-      border: none;
-      background: transparent;
+      border: 1px solid rgba(7,155,143,0.28);
+      border-radius: 999px;
+      background: rgba(7,155,143,0.08);
       color: #079b8f;
-      padding: 0;
+      padding: 5px 9px;
       font-family: 'Outfit', Arial, sans-serif;
       font-size: 10px;
-      letter-spacing: 0.18em;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
       cursor: pointer;
     }
@@ -1215,21 +1239,24 @@ export function GrowMedicoConsultation() {
     }
     .finish-btn {
       border: 1px solid rgba(7,155,143,0.62);
-      border-radius: 0;
-      background: rgba(7,155,143,0.08);
-      color: #16c6b3;
+      border-radius: 8px;
+      background: linear-gradient(135deg, rgba(22,198,179,0.95), rgba(7,155,143,0.86));
+      color: #031010;
       min-height: 48px;
-      padding: 0 20px;
+      padding: 0 22px;
       font-family: 'Outfit', Arial, sans-serif;
-      font-size: 11px;
-      letter-spacing: 0.28em;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
       cursor: pointer;
       transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease;
-      box-shadow: inset 0 0 0 1px rgba(232,251,248,0.03);
+      box-shadow:
+        0 16px 40px rgba(7,155,143,0.18),
+        inset 0 1px 0 rgba(255,255,255,0.22);
     }
     .finish-btn:hover {
-      background: rgba(7,155,143,0.16);
+      background: linear-gradient(135deg, #31dbc9, #079b8f);
       transform: translateY(-1px);
     }
     .finish-btn:disabled {
@@ -1359,22 +1386,25 @@ export function GrowMedicoConsultation() {
       font-weight: 300;
     }
     .send-btn {
-      border: none;
+      border: 1px solid rgba(22,198,179,0.3);
+      border-radius: 999px;
       width: auto;
       min-width: auto;
-      height: auto;
-      background: transparent;
-      color: rgba(242,239,230,0.56);
+      height: 38px;
+      background: rgba(7,155,143,0.1);
+      color: rgba(242,239,230,0.78);
       cursor: pointer;
-      padding: 0 0 0 18px;
+      padding: 0 15px;
       justify-self: end;
-      letter-spacing: 0.42em;
+      letter-spacing: 0.12em;
       transition: color 0.18s ease, border-color 0.18s ease, background 0.18s ease, transform 0.18s ease;
     }
     .send-btn:not(:disabled):hover {
-      color: #16c6b3;
-      transform: translateX(3px);
-      text-shadow: 0 0 18px rgba(7,155,143,0.44);
+      border-color: rgba(22,198,179,0.68);
+      background: rgba(7,155,143,0.18);
+      color: #f2efe6;
+      transform: translateY(-1px);
+      text-shadow: none;
     }
     .send-btn:disabled {
       cursor: default;
@@ -1588,6 +1618,9 @@ export function GrowMedicoConsultation() {
       .notice-row.active-message {
         display: block;
       }
+      .user-message.active-message .answered-question {
+        display: block;
+      }
       .message-block.bot-message.active-message {
         display: none;
       }
@@ -1675,7 +1708,6 @@ export function GrowMedicoConsultation() {
       .top-kicker,
       .chapter-label,
       .message-label,
-      .send-btn,
       .refresh-btn {
         letter-spacing: 0.32em;
       }
@@ -1729,8 +1761,8 @@ export function GrowMedicoConsultation() {
         grid-column: auto;
         justify-self: end;
         margin: 0;
-        padding-left: 0;
-        letter-spacing: 0.24em;
+        padding: 0 13px;
+        letter-spacing: 0.1em;
       }
       .answer-input {
         font-size: 16px;
@@ -1951,7 +1983,7 @@ export function GrowMedicoConsultation() {
               <div className="answer-progress question-progress" aria-hidden="true">
                 <span />
               </div>
-              {step !== "summary" && step !== "done" && (
+              {step !== "summary" && step !== "done" && latestMessage?.type !== "user" && (
                 <div className="mobile-question-panel">
                   <div className="mobile-current-question">{PROMPTS[step]}</div>
                 </div>
@@ -1988,6 +2020,9 @@ export function GrowMedicoConsultation() {
                     }`}
                   >
                     <div className="row user">
+                      {message.questionText && (
+                        <div className="answered-question">{message.questionText}</div>
+                      )}
                       <div className="user-bubble">{message.text}</div>
                     </div>
                     <div className="user-time">{formatRelativeTime(message.createdAt, now)}</div>
