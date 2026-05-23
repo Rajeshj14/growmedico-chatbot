@@ -2,7 +2,7 @@
 
 import { type CSSProperties, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { CalendarDays } from "lucide-react";
+import { CalendarDays, ChevronDown, ChevronUp } from "lucide-react";
 
 const LOCAL_STORAGE_KEY = "growMedicoConsultationSubmissions";
 const LOGO_SRC = "/gmlogo1.webp";
@@ -257,6 +257,7 @@ export function GrowMedicoConsultation() {
   const [selectedTime, setSelectedTime] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [editingStep, setEditingStep] = useState<FieldStep | null>(null);
+  const [videoCollapsed, setVideoCollapsed] = useState(false);
   const [now, setNow] = useState(() => Date.now());
   const [data, setData] = useState<FormData>({
     name: "",
@@ -640,6 +641,9 @@ export function GrowMedicoConsultation() {
       background:
         linear-gradient(90deg, transparent 0 70%, rgba(3,6,7,0.82) 100%),
         linear-gradient(180deg, rgba(3,6,7,0.05), transparent 42%, rgba(3,6,7,0.5));
+    }
+    .video-toggle-btn {
+      display: none;
     }
     @keyframes slowAura {
       0%, 100% { opacity: 0.35; transform: translate3d(-8%, -4%, 0) scale(1); }
@@ -1438,19 +1442,50 @@ export function GrowMedicoConsultation() {
         grid-template-rows: minmax(280px, 54dvh) minmax(0, 1fr);
         border-top: 0;
         border-bottom: 0;
+        transition: grid-template-rows 0.25s ease;
+      }
+      .consultation-shell.video-collapsed {
+        grid-template-rows: 92px minmax(0, 1fr);
       }
       .video-panel {
-        height: 54dvh;
+        height: 100%;
         min-height: 0;
         padding: 28px 24px 22px;
         border-right: none;
         border-bottom: 1px solid rgba(255,255,255,0.1);
+        transition: height 0.25s ease, padding 0.25s ease;
+      }
+      .video-collapsed .video-panel {
+        height: 92px;
+        padding: 12px 18px;
       }
         .bubbles{
         font-size: 16px important!;
       }
       .video-panel video {
         object-position: center 20%;
+      }
+      .video-toggle-btn {
+        position: absolute;
+        left: 50%;
+        bottom: -18px;
+        z-index: 5;
+        width: 36px;
+        height: 36px;
+        display: grid;
+        place-items: center;
+        transform: translateX(-50%);
+        border: 1px solid rgba(232,251,248,0.22);
+        border-radius: 999px;
+        background: rgba(3,8,8,0.86);
+        color: #16c6b3;
+        cursor: pointer;
+        box-shadow: 0 12px 36px rgba(0,0,0,0.36), 0 0 20px rgba(7,155,143,0.18);
+        backdrop-filter: blur(10px);
+      }
+      .video-toggle-btn svg {
+        width: 20px;
+        height: 20px;
       }
       .brand-panel {
         width: fit-content;
@@ -1609,9 +1644,13 @@ export function GrowMedicoConsultation() {
     }
     @media (max-width: 640px) {
       .video-panel {
-        height: 54dvh;
+        height: 100%;
         min-height: 0;
         padding: 22px 18px 20px;
+      }
+      .video-collapsed .video-panel {
+        height: 92px;
+        padding: 12px 16px;
       }
       .brand-panel {
         max-width: 78%;
@@ -1705,9 +1744,13 @@ export function GrowMedicoConsultation() {
     }
     @media (max-width: 420px) {
       .video-panel {
-        height: 54dvh;
+        height: 100%;
         min-height: 0;
         padding: 18px 16px;
+      }
+      .video-collapsed .video-panel {
+        height: 88px;
+        padding: 10px 14px;
       }
       .left-logo {
         width: min(132px, 100%);
@@ -1788,7 +1831,7 @@ export function GrowMedicoConsultation() {
   return (
     <main className="gold-page">
       <style>{styles}</style>
-      <div className="consultation-shell">
+      <div className={`consultation-shell${videoCollapsed ? " video-collapsed" : ""}`}>
         <aside
           className="video-panel"
           aria-label="Grow Medico consultation introduction"
@@ -1809,6 +1852,14 @@ export function GrowMedicoConsultation() {
           <div className="brand-panel">
             <img className="left-logo" src={LOGO_SRC} alt="Grow Medico" />
           </div>
+          <button
+            className="video-toggle-btn"
+            type="button"
+            onClick={() => setVideoCollapsed((current) => !current)}
+            aria-label={videoCollapsed ? "Expand video" : "Collapse video"}
+          >
+            {videoCollapsed ? <ChevronDown aria-hidden="true" /> : <ChevronUp aria-hidden="true" />}
+          </button>
 
           {/* <p className="brand-quote">
             "Personal Branding | Digital Marketing | <strong>Growth</strong>."
