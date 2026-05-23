@@ -1405,12 +1405,12 @@ export function GrowMedicoConsultation() {
         height: 100dvh;
         min-height: 0;
         grid-template-columns: 1fr;
-        grid-template-rows: 50dvh minmax(0, 1fr);
+        grid-template-rows: minmax(240px, 44dvh) minmax(0, 1fr);
         border-top: 0;
         border-bottom: 0;
       }
       .video-panel {
-        height: 50dvh;
+        height: 44dvh;
         min-height: 0;
         padding: 28px 24px 22px;
         border-right: none;
@@ -1462,27 +1462,27 @@ export function GrowMedicoConsultation() {
         padding-right: 24px;
       }
       .header-copy {
-        padding-top: 16px;
-        padding-bottom: 12px;
+        padding-top: 12px;
+        padding-bottom: 10px;
         border-bottom: 0;
       }
       .top-kicker {
-        margin-bottom: 8px;
-        padding-bottom: 5px;
-        font-size: 10px;
+        margin-bottom: 6px;
+        padding-bottom: 4px;
+        font-size: 9px;
       }
       .header-subtitle {
-        font-size: 13px;
+        font-size: 11px;
       }
       .header-subtitle::after {
-        margin-top: 8px;
+        margin-top: 6px;
       }
       .header-copy .row {
-        margin-top: 10px;
+        margin-top: 8px;
       }
       .header-copy .bubble {
-        font-size: 16px;
-        line-height: 1.32;
+        font-size: 13px;
+        line-height: 1.28;
         max-width: 100%;
       }
       .chapter-block {
@@ -1497,11 +1497,13 @@ export function GrowMedicoConsultation() {
         -webkit-overflow-scrolling: touch;
       }
       .chat-body {
-        height: auto;
+        height: 100%;
         min-height: 0;
         overflow: visible;
         padding-right: 0;
         padding-bottom: 14px;
+        display: flex;
+        flex-direction: column;
       }
       .message-block {
         display: none;
@@ -1563,7 +1565,7 @@ export function GrowMedicoConsultation() {
         color: #079b8f;
         font-family: 'Outfit', Arial, sans-serif;
         font-size: 16px;
-        line-height: 1.32;
+        line-height: 1.34;
         font-weight: 400;
       }
       .answer-progress {
@@ -1573,7 +1575,7 @@ export function GrowMedicoConsultation() {
     }
     @media (max-width: 640px) {
       .video-panel {
-        height: 50dvh;
+        height: 44dvh;
         min-height: 0;
         padding: 22px 18px 20px;
       }
@@ -1594,8 +1596,8 @@ export function GrowMedicoConsultation() {
         padding-top: 10px;
       }
       .header-copy {
-        padding-top: 12px;
-        padding-bottom: 10px;
+        padding-top: 10px;
+        padding-bottom: 8px;
       }
       .top-kicker,
       .chapter-label,
@@ -1611,8 +1613,8 @@ export function GrowMedicoConsultation() {
         margin-top: 8px;
       }
       .header-copy .bubble {
-        font-size: 16px;
-        line-height: 1.32;
+        font-size: 13px;
+        line-height: 1.26;
       }
       .message-label {
         margin-bottom: 18px;
@@ -1639,7 +1641,7 @@ export function GrowMedicoConsultation() {
         gap: 10px;
       }
       .chat-input {
-        padding: 10px 20px max(24px, env(safe-area-inset-bottom));
+        padding: 8px 20px max(20px, env(safe-area-inset-bottom));
       }
       .input-line {
         grid-template-columns: 28px minmax(0, 1fr) auto;
@@ -1669,7 +1671,7 @@ export function GrowMedicoConsultation() {
     }
     @media (max-width: 420px) {
       .video-panel {
-        height: 50dvh;
+        height: 42dvh;
         min-height: 0;
         padding: 18px 16px;
       }
