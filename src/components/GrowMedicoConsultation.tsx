@@ -844,7 +844,7 @@ export function GrowMedicoConsultation() {
       display: block;
       width: 50px;
       height: 1px;
-      margin-top: 20px;
+      margin-top: 10px;
       background: linear-gradient(90deg, rgba(232,251,248,0.45), rgba(7,155,143,0.65));
     }
     .header-copy .message-label {
@@ -1225,6 +1225,9 @@ export function GrowMedicoConsultation() {
       box-shadow: 0 0 20px rgba(7,155,143,0.68);
       transition: width 0.35s ease;
     }
+    .mobile-current-question {
+      display: none;
+    }
     .chat-input form {
       width: 100%;
     }
@@ -1421,16 +1424,35 @@ export function GrowMedicoConsultation() {
         padding-right: 24px;
       }
       .header-copy {
-        padding-top: 30px;
-        padding-bottom: 24px;
+        padding-top: 16px;
+        padding-bottom: 12px;
         border-bottom: 0;
+      }
+      .top-kicker {
+        margin-bottom: 8px;
+        padding-bottom: 5px;
+        font-size: 10px;
+      }
+      .header-subtitle {
+        font-size: 13px;
+      }
+      .header-subtitle::after {
+        margin-top: 8px;
+      }
+      .header-copy .row {
+        margin-top: 10px;
+      }
+      .header-copy .bubble {
+        font-size: 16px;
+        line-height: 1.32;
+        max-width: 100%;
       }
       .chapter-block {
         display: none;
       }
       .chat-body-wrap {
-        padding-top: 24px;
-        padding-bottom: 14px;
+        padding-top: 12px;
+        padding-bottom: 10px;
         overflow: hidden;
       }
       .chat-body {
@@ -1451,6 +1473,7 @@ export function GrowMedicoConsultation() {
         display: flex;
       }
       .message-block.active-message,
+      .message-block.user-message,
       .notice-row.active-message {
         display: block;
       }
@@ -1460,7 +1483,8 @@ export function GrowMedicoConsultation() {
       }
       .bubble,
       .option-bubble {
-        font-size: 26px;
+        font-size: 16px;
+        line-height: 1.32;
         max-width: 100%;
       }
       .chat-body > div:first-child .bubble {
@@ -1478,6 +1502,15 @@ export function GrowMedicoConsultation() {
       .chat-input {
         display: block;
         padding-top: 8px;
+      }
+      .mobile-current-question {
+        display: block;
+        margin: 0 0 10px;
+        color: #079b8f;
+        font-family: 'Outfit', Arial, sans-serif;
+        font-size: 16px;
+        line-height: 1.32;
+        font-weight: 400;
       }
       .answer-progress {
         display: block;
@@ -1503,11 +1536,11 @@ export function GrowMedicoConsultation() {
         font-size: 24px;
       }
       .chat-body-wrap {
-        padding-top: 18px;
+        padding-top: 10px;
       }
       .header-copy {
-        padding-top: 18px;
-        padding-bottom: 14px;
+        padding-top: 12px;
+        padding-bottom: 10px;
       }
       .top-kicker,
       .chapter-label,
@@ -1517,19 +1550,26 @@ export function GrowMedicoConsultation() {
         letter-spacing: 0.32em;
       }
       .header-subtitle {
-        font-size: 14px;
+        font-size: 12px;
+      }
+      .header-copy .row {
+        margin-top: 8px;
+      }
+      .header-copy .bubble {
+        font-size: 16px;
+        line-height: 1.32;
       }
       .message-label {
         margin-bottom: 18px;
       }
       .bubble,
       .option-bubble {
-        font-size: 20px;
-        line-height: 1.34;
+        font-size: 16px;
+        line-height: 1.32;
       }
       .user-bubble {
         max-width: 100%;
-        font-size: 18px;
+        font-size: 16px;
         padding: 14px 16px;
       }
       .option-title {
@@ -1562,7 +1602,7 @@ export function GrowMedicoConsultation() {
         padding-left: 0;
       }
       .answer-input {
-        font-size: 18px;
+        font-size: 16px;
       }
       .time-row {
         padding-left: 0;
@@ -1597,7 +1637,7 @@ export function GrowMedicoConsultation() {
         font-size: 9px;
       }
       .answer-input {
-        font-size: 17px;
+        font-size: 16px;
       }
     }
   `;
@@ -1771,7 +1811,9 @@ export function GrowMedicoConsultation() {
                 ) : message.type === "bot" ? (
                   <div
                     key={message.id}
-                    className={`message-block${message.id === latestMessageId ? " active-message" : ""}`}
+                    className={`message-block user-message${
+                      message.id === latestMessageId ? " active-message" : ""
+                    }`}
                   >
                     <div className="row">
                       {botAvatar}
@@ -1806,6 +1848,9 @@ export function GrowMedicoConsultation() {
 
           {!OPTIONS[step] && step !== "summary" && (
             <div className="chat-input">
+              <div className="mobile-current-question">
+                {PROMPTS[step as Exclude<Step, "summary" | "done">]}
+              </div>
               <form
                 onSubmit={(event) => {
                   event.preventDefault();
