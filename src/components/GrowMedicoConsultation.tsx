@@ -1828,13 +1828,6 @@ export function GrowMedicoConsultation() {
               {/* <div className="message-label intro-message">Grow Medico</div> */}
               <div className="row intro-message">
                 {botAvatar}
-                <div className="bubble">
-                  Hello! Welcome to <strong>Grow Medico</strong>.
-                  <br />
-                  We're a personal branding and digital growth team for healthcare professionals.
-                  <br />
-                  please fill the form below to book a consultation with our team.
-                </div>
               </div>
             </div>
             <div className="chapter-block">
