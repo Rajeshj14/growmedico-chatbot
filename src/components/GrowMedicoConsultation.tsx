@@ -531,9 +531,15 @@ export function GrowMedicoConsultation() {
     { field: "consultationDate", label: "Preferred Slot", value: data.consultationDate },
   ];
   const currentStepIndex = Math.max(0, STEP_ORDER.indexOf(step));
+  const completedStepCount = STEP_ORDER.filter(
+    (stepName): stepName is FieldStep =>
+      stepName !== "summary" && stepName !== "done" && Boolean(data[stepName]),
+  ).length;
   const chapterNumber = String(Math.min(currentStepIndex + 1, STEP_ORDER.length)).padStart(2, "0");
   const totalChapters = String(STEP_ORDER.length).padStart(2, "0");
   const progressPercent = `${((currentStepIndex + 1) / STEP_ORDER.length) * 100}%`;
+  const answeredProgressPercent = `${(completedStepCount / (STEP_ORDER.length - 1)) * 100}%`;
+  const latestMessageId = messages[messages.length - 1]?.id;
 
   const botAvatar = (
     <div className="avatar">
@@ -1191,6 +1197,22 @@ export function GrowMedicoConsultation() {
         0 -22px 70px rgba(0,0,0,0.34),
         inset 0 1px 0 rgba(7,155,143,0.08);
     }
+    .answer-progress {
+      display: none;
+      width: 100%;
+      height: 3px;
+      margin-bottom: 12px;
+      background: rgba(232,251,248,0.1);
+      overflow: hidden;
+    }
+    .answer-progress span {
+      display: block;
+      width: var(--answered-progress);
+      height: 100%;
+      background: linear-gradient(90deg, #e8fbf8 0%, #16c6b3 48%, #079b8f 100%);
+      box-shadow: 0 0 20px rgba(7,155,143,0.68);
+      transition: width 0.35s ease;
+    }
     .chat-input form {
       width: 100%;
     }
@@ -1327,22 +1349,23 @@ export function GrowMedicoConsultation() {
     }
     @media (max-width: 980px) {
       .gold-page {
-        position: static;
-        min-height: 100dvh;
-        height: auto;
-        overflow-y: auto;
+        position: fixed;
+        height: 100dvh;
+        overflow: hidden;
         align-items: stretch;
       }
       .consultation-shell {
         width: 100%;
-        min-height: 100dvh;
-        height: auto;
+        height: 100dvh;
+        min-height: 0;
         grid-template-columns: 1fr;
+        grid-template-rows: 50dvh minmax(0, 1fr);
         border-top: 0;
         border-bottom: 0;
       }
       .video-panel {
-        min-height: min(42dvh, 420px);
+        height: 50dvh;
+        min-height: 0;
         padding: 28px 24px 22px;
         border-right: none;
         border-bottom: 1px solid rgba(255,255,255,0.1);
@@ -1359,9 +1382,9 @@ export function GrowMedicoConsultation() {
         margin-bottom: 0;
       }
       .chat-card {
-        min-height: auto;
-        grid-template-rows: auto auto auto;
-        overflow: visible;
+        min-height: 0;
+        grid-template-rows: auto minmax(0, 1fr) auto;
+        overflow: hidden;
         border-left: 0;
       }
       .chat-card::after {
@@ -1394,16 +1417,24 @@ export function GrowMedicoConsultation() {
         display: none;
       }
       .chat-body-wrap {
-        padding-top: 34px;
-        padding-bottom: 18px;
-        overflow: visible;
+        padding-top: 24px;
+        padding-bottom: 14px;
+        overflow: hidden;
       }
       .chat-body {
-        height: auto;
+        height: 100%;
         min-height: 0;
-        overflow: visible;
+        overflow: auto;
         padding-right: 0;
         padding-bottom: 8px;
+      }
+      .intro-message,
+      .message-block {
+        display: none;
+      }
+      .message-block.active-message,
+      .notice-row.active-message {
+        display: block;
       }
       .refresh-btn {
         right: 24px;
@@ -1427,12 +1458,17 @@ export function GrowMedicoConsultation() {
         grid-template-columns: 1fr;
       }
       .chat-input {
+        display: block;
         padding-top: 8px;
+      }
+      .answer-progress {
+        display: block;
       }
     }
     @media (max-width: 640px) {
       .video-panel {
-        min-height: 34dvh;
+        height: 50dvh;
+        min-height: 0;
         padding: 22px 18px 20px;
       }
       .brand-panel {
@@ -1449,11 +1485,11 @@ export function GrowMedicoConsultation() {
         font-size: 24px;
       }
       .chat-body-wrap {
-        padding-top: 28px;
+        padding-top: 18px;
       }
       .header-copy {
-        padding-top: 26px;
-        padding-bottom: 22px;
+        padding-top: 18px;
+        padding-bottom: 14px;
       }
       .top-kicker,
       .chapter-label,
@@ -1466,11 +1502,11 @@ export function GrowMedicoConsultation() {
         font-size: 14px;
       }
       .message-label {
-        margin-bottom: 24px;
+        margin-bottom: 18px;
       }
       .bubble,
       .option-bubble {
-        font-size: 22px;
+        font-size: 20px;
         line-height: 1.34;
       }
       .user-bubble {
@@ -1490,11 +1526,11 @@ export function GrowMedicoConsultation() {
         gap: 10px;
       }
       .chat-input {
-        padding: 6px 20px 20px;
+        padding: 6px 20px 14px;
       }
       .input-line {
         grid-template-columns: 26px minmax(0, 1fr);
-        min-height: 76px;
+        min-height: 58px;
         padding: 0;
       }
       .input-line::after {
@@ -1504,7 +1540,7 @@ export function GrowMedicoConsultation() {
         grid-column: 1 / -1;
         justify-self: start;
         margin-left: 40px;
-        margin-bottom: 10px;
+        margin-bottom: 4px;
         padding-left: 0;
       }
       .answer-input {
@@ -1519,7 +1555,8 @@ export function GrowMedicoConsultation() {
     }
     @media (max-width: 420px) {
       .video-panel {
-        min-height: 90dvh;
+        height: 50dvh;
+        min-height: 0;
         padding: 18px 16px;
       }
       .left-logo {
@@ -1649,7 +1686,15 @@ export function GrowMedicoConsultation() {
           </div> */}
         </aside>
 
-        <section className="chat-card" style={{ "--progress": progressPercent } as CSSProperties}>
+        <section
+          className="chat-card"
+          style={
+            {
+              "--progress": progressPercent,
+              "--answered-progress": answeredProgressPercent,
+            } as CSSProperties
+          }
+        >
           <header className="consultation-header">
             <div className="header-copy">
               <div className="top-kicker">Private Consultation</div>
@@ -1683,8 +1728,11 @@ export function GrowMedicoConsultation() {
               ↻
             </button>
             <div ref={chatRef} className="chat-body">
-              <div className="message-label">Grow Medico</div>
-              <div className="row">
+              <div className="answer-progress question-progress" aria-hidden="true">
+                <span />
+              </div>
+              <div className="message-label intro-message">Grow Medico</div>
+              <div className="row intro-message">
                 {botAvatar}
                 <div className="bubble">
                   Hello! Welcome to <strong>Grow Medico</strong>.
@@ -1694,15 +1742,23 @@ export function GrowMedicoConsultation() {
                   please fill the form below to book a consultation with our team.
                 </div>
               </div>
-              <div className="time">{formatRelativeTime(introCreatedAt, now)}</div>
+              <div className="time intro-message">{formatRelativeTime(introCreatedAt, now)}</div>
 
               {messages.map((message) =>
                 message.type === "notice" ? (
-                  <div key={message.id} className="notice-row">
+                  <div
+                    key={message.id}
+                    className={`notice-row message-block${
+                      message.id === latestMessageId ? " active-message" : ""
+                    }`}
+                  >
                     <div className="notice-bubble">{message.text}</div>
                   </div>
                 ) : message.type === "bot" ? (
-                  <div key={message.id}>
+                  <div
+                    key={message.id}
+                    className={`message-block${message.id === latestMessageId ? " active-message" : ""}`}
+                  >
                     <div className="row">
                       {botAvatar}
                       <div className="bubble">{message.text}</div>
@@ -1710,7 +1766,10 @@ export function GrowMedicoConsultation() {
                     <div className="time">{formatRelativeTime(message.createdAt, now)}</div>
                   </div>
                 ) : (
-                  <div key={message.id}>
+                  <div
+                    key={message.id}
+                    className={`message-block${message.id === latestMessageId ? " active-message" : ""}`}
+                  >
                     <div className="row user">
                       <div className="user-bubble">{message.text}</div>
                     </div>
