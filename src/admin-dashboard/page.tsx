@@ -303,6 +303,71 @@ export default function LeadsTable({
 
   const formStats = getFormStats();
 
+  const menuSurfaceStyle = {
+    backgroundColor: "#ffffff",
+    borderColor: "#bcd8d4",
+    borderRadius: "12px",
+    boxShadow: "0 22px 55px rgba(5, 35, 34, 0.18)",
+    color: "#102326",
+    padding: "8px",
+    zIndex: 1000,
+  };
+
+  const menuItemStyle = {
+    borderRadius: "9px",
+    color: "#102326",
+    fontWeight: 700,
+    padding: "10px 12px",
+  };
+
+  const detailLabelStyle = {
+    color: "#102326",
+    fontWeight: 800,
+  };
+
+  const messageLabelPattern =
+    /(Professional Background|Digital Experience|Main Struggle|Revenue Mechanism|Platform Priorities|Ultimate Goal|Investment Mindset|Budget Fit|Appointment|Page URL|Consent|Source):/g;
+
+  const renderMessage = (message?: string) => {
+    if (!message) return "No message provided";
+
+    const matches = [...message.matchAll(messageLabelPattern)];
+    if (matches.length === 0) return message;
+
+    return (
+      <div className="lead-message-list">
+        {matches.map((match, index) => {
+          const label = match[1];
+          const valueStart = (match.index ?? 0) + match[0].length;
+          const valueEnd = matches[index + 1]?.index ?? message.length;
+          const value = message.slice(valueStart, valueEnd).trim();
+
+          return (
+            <div className="lead-message-row" key={`${label}-${index}`}>
+              <strong>{label}</strong>
+              <span>{value || "Not specified"}</span>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const renderMessageText = (message?: string) => {
+    if (!message) return "No message provided";
+
+    return message.split(messageLabelPattern).map((part, index) => {
+      if (index % 2 === 1)
+        return (
+          <strong key={`${part}-${index}`} style={detailLabelStyle}>
+            {part}:
+          </strong>
+        );
+
+      return part;
+    });
+  };
+
   const dashboardStyles = `
     .admin-dashboard {
       min-height: 100vh;
@@ -424,29 +489,56 @@ export default function LeadsTable({
       margin-top: 6px;
     }
 
-    .admin-dashboard [class*="md:grid-cols-6"] {
+    .admin-dashboard .admin-filters {
       display: grid;
-      grid-template-columns: 2fr repeat(4, 1fr);
-      gap: 12px;
+      grid-template-columns: minmax(360px, 2.6fr) minmax(150px, 0.85fr) minmax(190px, 1fr) minmax(190px, 1fr) minmax(170px, 0.9fr);
+      gap: 18px;
       align-items: center;
-      padding: 16px;
+      padding: 20px 22px;
       margin-bottom: 20px;
-      background: #f4faf9;
+      background: linear-gradient(135deg, #f7fcfb 0%, #eef8f6 100%);
       border: 1px solid #d7e8e5;
       border-radius: 8px;
     }
 
+    .admin-dashboard .admin-search,
+    .admin-dashboard .admin-filter-control {
+      width: 100%;
+      min-width: 0;
+      box-sizing: border-box;
+    }
+
+    .admin-dashboard .admin-search-field {
+      position: relative;
+      width: 100%;
+      height: 50px;
+    }
+
+    .admin-dashboard .admin-search-icon {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #5f7478;
+      pointer-events: none;
+      z-index: 1;
+    }
+
     .admin-dashboard input {
       width: 100%;
-      min-height: 40px;
+      height: 50px;
+      min-height: 50px;
+      box-sizing: border-box;
       border: 1px solid #c9dfdc;
-      border-radius: 6px;
+      border-radius: 10px;
       background: #ffffff;
       color: #102326;
-      padding: 0 12px 0 40px;
+      padding: 0 16px 0 48px;
       font: inherit;
-      font-size: 14px;
+      font-size: 15px;
+      line-height: 50px;
       outline: none;
+      box-shadow: 0 1px 0 rgba(5, 35, 34, 0.04);
     }
 
     .admin-dashboard input:focus,
@@ -470,9 +562,45 @@ export default function LeadsTable({
 
     .admin-dashboard [role="combobox"] {
       width: 100%;
-      min-height: 40px;
+      height: 50px;
+      min-height: 50px;
+      box-sizing: border-box;
       justify-content: space-between;
       background: #ffffff;
+      border-radius: 10px;
+      color: #102326;
+      font-weight: 800;
+      box-shadow: 0 1px 0 rgba(5, 35, 34, 0.04);
+    }
+
+    .admin-dashboard [role="combobox"] span {
+      min-width: 0;
+      color: #102326;
+      font-weight: 800;
+    }
+
+    .admin-select-content {
+      min-width: var(--radix-select-trigger-width);
+      background: #ffffff !important;
+      border: 1px solid #bcd8d4 !important;
+      color: #102326 !important;
+      box-shadow: 0 22px 55px rgba(5, 35, 34, 0.18) !important;
+    }
+
+    .admin-select-item,
+    .admin-dropdown-item {
+      cursor: pointer;
+      color: #102326 !important;
+      font-size: 14px;
+      line-height: 1.2;
+      transition: background 0.16s ease, color 0.16s ease, transform 0.16s ease;
+    }
+
+    .admin-select-item[data-highlighted],
+    .admin-dropdown-item[data-highlighted] {
+      background: #e8f7f5 !important;
+      color: #063f3d !important;
+      transform: translateX(2px);
     }
 
     .admin-dashboard [class*="rounded-lg"][class*="overflow-hidden"] {
@@ -588,6 +716,117 @@ export default function LeadsTable({
       font-size: 13px;
     }
 
+    .admin-dashboard .lead-expanded-row {
+      display: grid;
+      grid-template-columns: minmax(420px, 0.95fr) minmax(520px, 1.05fr);
+      gap: 18px;
+      align-items: stretch;
+      padding: 18px;
+      border: 1px solid #d7e8e5;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #f7fcfb 0%, #eff8f6 100%);
+    }
+
+    .admin-dashboard .lead-detail-card {
+      min-width: 0;
+      border: 1px solid #d4e8e5;
+      border-radius: 8px;
+      background: #ffffff;
+      padding: 20px;
+      box-shadow: 0 12px 28px rgba(5, 35, 34, 0.06);
+    }
+
+    .admin-dashboard .lead-detail-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #e4efed;
+      color: #102326;
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: 0;
+    }
+
+    .admin-dashboard .lead-detail-title::before {
+      content: "";
+      width: 4px;
+      height: 18px;
+      border-radius: 999px;
+      background: #079b8f;
+      flex: 0 0 auto;
+    }
+
+    .admin-dashboard .lead-detail-list {
+      display: grid;
+      gap: 0;
+      color: #294448;
+    }
+
+    .admin-dashboard .lead-detail-row {
+      display: grid;
+      grid-template-columns: minmax(150px, 180px) minmax(0, 1fr);
+      gap: 14px;
+      align-items: start;
+      padding: 10px 0;
+      border-bottom: 1px solid #edf4f3;
+    }
+
+    .admin-dashboard .lead-detail-row:last-child {
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .admin-dashboard .lead-detail-card strong {
+      color: #102326;
+      font-weight: 800;
+      line-height: 1.4;
+    }
+
+    .admin-dashboard .lead-detail-row > span,
+    .admin-dashboard .lead-message-row > span {
+      min-width: 0;
+      color: #294448;
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+    }
+
+    .admin-dashboard .lead-message {
+      margin: 0;
+      border: 1px solid #d7e8e5;
+      border-radius: 8px;
+      background: #fbfefd;
+      color: #294448;
+      line-height: 1.65;
+      padding: 6px 16px;
+    }
+
+    .admin-dashboard .lead-message-list {
+      display: grid;
+      gap: 0;
+    }
+
+    .admin-dashboard .lead-message-row {
+      display: grid;
+      grid-template-columns: minmax(160px, 190px) minmax(0, 1fr);
+      gap: 14px;
+      align-items: start;
+      padding: 12px 0;
+      border-bottom: 1px solid #edf4f3;
+    }
+
+    .admin-dashboard .lead-message-row:last-child {
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .admin-dashboard .lead-message-row strong {
+      color: #102326;
+      font-weight: 800;
+      line-height: 1.4;
+    }
+
     @media (max-width: 980px) {
       .admin-dashboard {
         padding: 16px;
@@ -600,13 +839,27 @@ export default function LeadsTable({
       }
 
       .admin-dashboard [class*="lg:grid-cols-4"],
-      .admin-dashboard [class*="md:grid-cols-6"] {
+      .admin-dashboard .admin-filters {
         grid-template-columns: 1fr;
       }
 
       .admin-dashboard th,
       .admin-dashboard td {
         padding: 12px;
+      }
+
+      .admin-dashboard .lead-detail-row {
+        grid-template-columns: 1fr;
+        gap: 4px;
+      }
+
+      .admin-dashboard .lead-message-row {
+        grid-template-columns: 1fr;
+        gap: 4px;
+      }
+
+      .admin-dashboard .lead-expanded-row {
+        grid-template-columns: 1fr;
       }
     }
   `;
@@ -818,10 +1071,10 @@ export default function LeadsTable({
           </div>
 
           {/* Filters */}
-          <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-            <div className="md:col-span-2">
-              <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
+          <div className="admin-filters">
+            <div className="admin-search">
+              <div className="admin-search-field">
+                <Search className="admin-search-icon h-5 w-5" />
                 <Input
                   placeholder="Search by name, phone, email, treatment, form..."
                   value={searchTerm}
@@ -832,75 +1085,109 @@ export default function LeadsTable({
             </div>
 
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="bg-white border-gray-300 text-gray-900">
+              <SelectTrigger className="admin-filter-control bg-white border-gray-300 text-gray-900">
                 <Filter className="h-4 w-4 mr-2 text-gray-500" />
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
-              <SelectContent className="bg-white border-gray-300 text-gray-900">
-                <SelectItem value="all" className="focus:bg-gray-100">
+              <SelectContent
+                className="admin-select-content bg-white border-gray-300 text-gray-900"
+                style={menuSurfaceStyle}
+              >
+                <SelectItem value="all" className="admin-select-item" style={menuItemStyle}>
                   All Status
                 </SelectItem>
-                <SelectItem value="new" className="focus:bg-gray-100">
+                <SelectItem value="new" className="admin-select-item" style={menuItemStyle}>
                   New
                 </SelectItem>
-                <SelectItem value="contacted" className="focus:bg-gray-100">
+                <SelectItem value="contacted" className="admin-select-item" style={menuItemStyle}>
                   Contacted
                 </SelectItem>
-                <SelectItem value="scheduled" className="focus:bg-gray-100">
+                <SelectItem value="scheduled" className="admin-select-item" style={menuItemStyle}>
                   Scheduled
                 </SelectItem>
-                <SelectItem value="converted" className="focus:bg-gray-100">
+                <SelectItem value="converted" className="admin-select-item" style={menuItemStyle}>
                   Converted
                 </SelectItem>
-                <SelectItem value="lost" className="focus:bg-gray-100">
+                <SelectItem value="lost" className="admin-select-item" style={menuItemStyle}>
                   Lost
                 </SelectItem>
               </SelectContent>
             </Select>
 
             <Select value={treatmentFilter} onValueChange={setTreatmentFilter}>
-              <SelectTrigger className="bg-white border-gray-300 text-gray-900">
+              <SelectTrigger className="admin-filter-control bg-white border-gray-300 text-gray-900">
                 <SelectValue placeholder="Treatment" />
               </SelectTrigger>
-              <SelectContent className="bg-white border-gray-300 text-gray-900">
-                <SelectItem value="all" className="focus:bg-gray-100">
+              <SelectContent
+                className="admin-select-content bg-white border-gray-300 text-gray-900"
+                style={menuSurfaceStyle}
+              >
+                <SelectItem value="all" className="admin-select-item" style={menuItemStyle}>
                   All Treatments
                 </SelectItem>
-                <SelectItem value="ICSI" className="focus:bg-gray-100">
+                <SelectItem value="ICSI" className="admin-select-item" style={menuItemStyle}>
                   ICSI
                 </SelectItem>
-                <SelectItem value="IUI" className="focus:bg-gray-100">
+                <SelectItem value="IUI" className="admin-select-item" style={menuItemStyle}>
                   IUI
                 </SelectItem>
-                <SelectItem value="Egg Freezing" className="focus:bg-gray-100">
+                <SelectItem
+                  value="Egg Freezing"
+                  className="admin-select-item"
+                  style={menuItemStyle}
+                >
                   Egg Freezing
                 </SelectItem>
-                <SelectItem value="Embryo Freezing" className="focus:bg-gray-100">
+                <SelectItem
+                  value="Embryo Freezing"
+                  className="admin-select-item"
+                  style={menuItemStyle}
+                >
                   Embryo Freezing
                 </SelectItem>
-                <SelectItem value="Hair fall / excessive shedding" className="focus:bg-gray-100">
+                <SelectItem
+                  value="Hair fall / excessive shedding"
+                  className="admin-select-item"
+                  style={menuItemStyle}
+                >
                   Hair Fall
                 </SelectItem>
-                <SelectItem value="Thinning / reduced density" className="focus:bg-gray-100">
+                <SelectItem
+                  value="Thinning / reduced density"
+                  className="admin-select-item"
+                  style={menuItemStyle}
+                >
                   Thinning
                 </SelectItem>
-                <SelectItem value="Dandruff / flaky, itchy scalp" className="focus:bg-gray-100">
+                <SelectItem
+                  value="Dandruff / flaky, itchy scalp"
+                  className="admin-select-item"
+                  style={menuItemStyle}
+                >
                   Dandruff
                 </SelectItem>
               </SelectContent>
             </Select>
 
             <Select value={formFilter} onValueChange={setFormFilter}>
-              <SelectTrigger className="bg-white border-gray-300 text-gray-900">
+              <SelectTrigger className="admin-filter-control bg-white border-gray-300 text-gray-900">
                 <Users className="h-4 w-4 mr-2 text-gray-500" />
                 <SelectValue placeholder="Form" />
               </SelectTrigger>
-              <SelectContent className="bg-white border-gray-300 text-gray-900">
-                <SelectItem value="all" className="focus:bg-gray-100">
+              <SelectContent
+                className="admin-select-content bg-white border-gray-300 text-gray-900"
+                style={menuSurfaceStyle}
+              >
+                <SelectItem value="all" className="admin-select-item" style={menuItemStyle}>
                   All Forms
                 </SelectItem>
                 {uniqueFormNames.map((formName) => (
-                  <SelectItem key={formName} value={formName} className="focus:bg-gray-100">
+                  <SelectItem
+                    key={formName}
+                    value={formName}
+                    className="admin-select-item"
+                    style={menuItemStyle}
+                  >
                     {formName === "hairtreatment"
                       ? "Hair Treatment"
                       : formName === "skin and hair leads"
@@ -918,21 +1205,24 @@ export default function LeadsTable({
             </Select>
 
             <Select value={dateFilter} onValueChange={setDateFilter}>
-              <SelectTrigger className="bg-white border-gray-300 text-gray-900">
+              <SelectTrigger className="admin-filter-control bg-white border-gray-300 text-gray-900">
                 <Calendar className="h-4 w-4 mr-2 text-gray-500" />
                 <SelectValue placeholder="Date" />
               </SelectTrigger>
-              <SelectContent className="bg-white border-gray-300 text-gray-900">
-                <SelectItem value="all" className="focus:bg-gray-100">
+              <SelectContent
+                className="admin-select-content bg-white border-gray-300 text-gray-900"
+                style={menuSurfaceStyle}
+              >
+                <SelectItem value="all" className="admin-select-item" style={menuItemStyle}>
                   All Time
                 </SelectItem>
-                <SelectItem value="today" className="focus:bg-gray-100">
+                <SelectItem value="today" className="admin-select-item" style={menuItemStyle}>
                   Today
                 </SelectItem>
-                <SelectItem value="week" className="focus:bg-gray-100">
+                <SelectItem value="week" className="admin-select-item" style={menuItemStyle}>
                   This Week
                 </SelectItem>
-                <SelectItem value="month" className="focus:bg-gray-100">
+                <SelectItem value="month" className="admin-select-item" style={menuItemStyle}>
                   This Month
                 </SelectItem>
               </SelectContent>
@@ -1115,9 +1405,13 @@ export default function LeadsTable({
                                     {getStatusBadge(lead.status)}
                                   </div>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent className="bg-white border-gray-200 text-gray-900">
+                                <DropdownMenuContent
+                                  className="admin-select-content bg-white border-gray-200 text-gray-900"
+                                  style={menuSurfaceStyle}
+                                >
                                   <DropdownMenuItem
-                                    className="focus:bg-gray-100"
+                                    className="admin-dropdown-item"
+                                    style={menuItemStyle}
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       updateLeadStatus(lead.id, "new");
@@ -1126,7 +1420,8 @@ export default function LeadsTable({
                                     New
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
-                                    className="focus:bg-gray-100"
+                                    className="admin-dropdown-item"
+                                    style={menuItemStyle}
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       updateLeadStatus(lead.id, "contacted");
@@ -1135,7 +1430,8 @@ export default function LeadsTable({
                                     Contacted
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
-                                    className="focus:bg-gray-100"
+                                    className="admin-dropdown-item"
+                                    style={menuItemStyle}
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       updateLeadStatus(lead.id, "scheduled");
@@ -1144,7 +1440,8 @@ export default function LeadsTable({
                                     Scheduled
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
-                                    className="focus:bg-gray-100"
+                                    className="admin-dropdown-item"
+                                    style={menuItemStyle}
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       updateLeadStatus(lead.id, "converted");
@@ -1153,7 +1450,8 @@ export default function LeadsTable({
                                     Converted
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
-                                    className="focus:bg-gray-100"
+                                    className="admin-dropdown-item"
+                                    style={menuItemStyle}
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       updateLeadStatus(lead.id, "lost");
@@ -1205,107 +1503,109 @@ export default function LeadsTable({
                           {expandedLead === lead.id && (
                             <tr className="bg-gray-50 border-b border-gray-200">
                               <td colSpan={8} className="p-4">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                                  <div>
-                                    <h4 className="font-medium text-gray-900 mb-2">Lead Details</h4>
-                                    <div className="space-y-2 text-gray-700">
-                                      <div>
-                                        <span className="font-medium">Source:</span>{" "}
-                                        {lead.source || "Not specified"}
+                                <div className="lead-expanded-row text-sm">
+                                  <div className="lead-detail-card">
+                                    <h4 className="lead-detail-title">Lead Details</h4>
+                                    <div className="lead-detail-list">
+                                      <div className="lead-detail-row">
+                                        <strong>Source</strong>
+                                        <span>{lead.source || "Not specified"}</span>
                                       </div>
 
                                       {isSmileBaby ? (
                                         <>
-                                          <div>
-                                            <span className="font-medium">
-                                              Woman's Age Bracket:
-                                            </span>{" "}
-                                            {lead.womansAgeBracket || "Not specified"}
+                                          <div className="lead-detail-row">
+                                            <strong>Woman's Age Bracket</strong>
+                                            <span>{lead.womansAgeBracket || "Not specified"}</span>
                                           </div>
-                                          <div>
-                                            <span className="font-medium">Trying Duration:</span>{" "}
-                                            {lead.tryingDuration || "Not specified"}
+                                          <div className="lead-detail-row">
+                                            <strong>Trying Duration</strong>
+                                            <span>{lead.tryingDuration || "Not specified"}</span>
                                           </div>
-                                          <div>
-                                            <span className="font-medium">WhatsApp:</span>{" "}
-                                            {lead.isWhatsapp ||
-                                              lead.whatsappNumber ||
-                                              "Not specified"}
+                                          <div className="lead-detail-row">
+                                            <strong>WhatsApp</strong>
+                                            <span>
+                                              {lead.isWhatsapp ||
+                                                lead.whatsappNumber ||
+                                                "Not specified"}
+                                            </span>
                                           </div>
                                         </>
                                       ) : isGrowMedicoConsultation ? (
                                         <>
-                                          <div>
-                                            <span className="font-medium">Appointment:</span>{" "}
-                                            {lead.appointmentDateTime || "Not specified"}
+                                          <div className="lead-detail-row">
+                                            <strong>Appointment</strong>
+                                            <span>
+                                              {lead.appointmentDateTime || "Not specified"}
+                                            </span>
                                           </div>
-                                          <div>
-                                            <span className="font-medium">
-                                              Professional Background:
-                                            </span>{" "}
-                                            {lead.professionalBackground || "Not specified"}
+                                          <div className="lead-detail-row">
+                                            <strong>Professional Background</strong>
+                                            <span>
+                                              {lead.professionalBackground || "Not specified"}
+                                            </span>
                                           </div>
-                                          <div>
-                                            <span className="font-medium">Digital Experience:</span>{" "}
-                                            {lead.digitalExperience || "Not specified"}
+                                          <div className="lead-detail-row">
+                                            <strong>Digital Experience</strong>
+                                            <span>{lead.digitalExperience || "Not specified"}</span>
                                           </div>
-                                          <div>
-                                            <span className="font-medium">Main Struggle:</span>{" "}
-                                            {lead.mainStruggle || "Not specified"}
+                                          <div className="lead-detail-row">
+                                            <strong>Main Struggle</strong>
+                                            <span>{lead.mainStruggle || "Not specified"}</span>
                                           </div>
-                                          <div>
-                                            <span className="font-medium">Revenue Mechanism:</span>{" "}
-                                            {lead.revenueMechanism || "Not specified"}
+                                          <div className="lead-detail-row">
+                                            <strong>Revenue Mechanism</strong>
+                                            <span>{lead.revenueMechanism || "Not specified"}</span>
                                           </div>
-                                          <div>
-                                            <span className="font-medium">
-                                              Platform Priorities:
-                                            </span>{" "}
-                                            {lead.platformPriorities || "Not specified"}
+                                          <div className="lead-detail-row">
+                                            <strong>Platform Priorities</strong>
+                                            <span>
+                                              {lead.platformPriorities || "Not specified"}
+                                            </span>
                                           </div>
-                                          <div>
-                                            <span className="font-medium">Ultimate Goal:</span>{" "}
-                                            {lead.ultimateGoal || "Not specified"}
+                                          <div className="lead-detail-row">
+                                            <strong>Ultimate Goal</strong>
+                                            <span>{lead.ultimateGoal || "Not specified"}</span>
                                           </div>
-                                          <div>
-                                            <span className="font-medium">Investment Mindset:</span>{" "}
-                                            {lead.investmentMindset || "Not specified"}
+                                          <div className="lead-detail-row">
+                                            <strong>Investment Mindset</strong>
+                                            <span>{lead.investmentMindset || "Not specified"}</span>
                                           </div>
-                                          <div>
-                                            <span className="font-medium">Page URL:</span>{" "}
-                                            {lead.pageUrl || "Not specified"}
+                                          <div className="lead-detail-row">
+                                            <strong>Page URL</strong>
+                                            <span>{lead.pageUrl || "Not specified"}</span>
                                           </div>
                                         </>
                                       ) : (
                                         <>
-                                          <div>
-                                            <span className="font-medium">Age:</span>{" "}
-                                            {lead.age || "Not specified"}
+                                          <div className="lead-detail-row">
+                                            <strong>Age</strong>
+                                            <span>{lead.age || "Not specified"}</span>
                                           </div>
-                                          <div>
-                                            <span className="font-medium">City:</span>{" "}
-                                            {lead.city || "Not specified"}
+                                          <div className="lead-detail-row">
+                                            <strong>City</strong>
+                                            <span>{lead.city || "Not specified"}</span>
                                           </div>
                                         </>
                                       )}
 
-                                      <div>
-                                        <span className="font-medium">Consent:</span>{" "}
-                                        {lead.consent ? "Yes" : "No"}
+                                      <div className="lead-detail-row">
+                                        <strong>Consent</strong>
+                                        <span>{lead.consent ? "Yes" : "No"}</span>
                                       </div>
                                       {lead.telecrmId && (
-                                        <div>
-                                          <span className="font-medium">TeleCRM ID:</span>{" "}
-                                          {lead.telecrmId}
+                                        <div className="lead-detail-row">
+                                          <strong>TeleCRM ID</strong>
+                                          <span>{lead.telecrmId}</span>
                                         </div>
                                       )}
                                     </div>
                                   </div>
-                                  <div>
-                                    <h4 className="font-medium text-gray-900 mb-2">Message</h4>
-                                    <p className="text-gray-700 bg-white p-3 rounded border border-gray-200">
-                                      {lead.message || "No message provided"}
-                                    </p>
+                                  <div className="lead-detail-card">
+                                    <h4 className="lead-detail-title">Message</h4>
+                                    <div className="lead-message">
+                                      {renderMessage(lead.message)}
+                                    </div>
                                   </div>
                                 </div>
                               </td>

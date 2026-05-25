@@ -1457,6 +1457,49 @@ export function GrowMedicoConsultation() {
         letter-spacing: 0.14em;
       }
     }
+    @media (min-width: 981px) {
+      .chat-body-wrap {
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding-bottom: 12px;
+      }
+      .chat-body {
+        height: auto;
+        min-height: 100%;
+        overflow: visible;
+        padding-bottom: 18px;
+      }
+      .user-bubble {
+        max-width: min(860px, 100%);
+        white-space: normal;
+        overflow-wrap: anywhere;
+        word-break: normal;
+      }
+      .choice-btn {
+        height: auto;
+        white-space: normal;
+        text-align: left;
+      }
+      .option-title {
+        margin-bottom: 18px;
+      }
+      .choice-list {
+        gap: 8px;
+      }
+      .choice-btn {
+        min-height: 46px;
+        padding-top: 11px;
+        padding-bottom: 11px;
+      }
+      .answer-input {
+        color: #f2efe6;
+        opacity: 1;
+        caret-color: #16c6b3;
+      }
+      .answer-input::placeholder {
+        color: rgba(232,251,248,0.58);
+      }
+    }
     @media (max-width: 980px) {
       .gold-page {
         position: fixed;

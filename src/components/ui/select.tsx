@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import * as SelectPrimitive from "@radix-ui/react-select";
-import { Check, ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -80,8 +80,7 @@ const SelectContent = React.forwardRef<
       <SelectPrimitive.Viewport
         className={cn(
           "p-1",
-          position === "popper" &&
-            "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]",
+          position === "popper" && "w-full min-w-[var(--radix-select-trigger-width)]",
         )}
       >
         {children}
@@ -116,11 +115,6 @@ const SelectItem = React.forwardRef<
     )}
     {...props}
   >
-    <span className="absolute right-2 flex h-3.5 w-3.5 items-center justify-center">
-      <SelectPrimitive.ItemIndicator>
-        <Check className="h-4 w-4" />
-      </SelectPrimitive.ItemIndicator>
-    </span>
     <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
   </SelectPrimitive.Item>
 ));
